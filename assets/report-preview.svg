@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Aperçu du rapport Local Time Tracker</title>
+  <desc id="desc">Tableau de bord avec temps actif, temps inactif, catégories, timeline et applications.</desc>
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity=".08"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="720" fill="#f1f5f9"/>
+  <g font-family="Segoe UI, Arial, sans-serif" fill="#162033">
+    <text x="55" y="48" font-size="12" font-weight="700" letter-spacing="1.5" fill="#4f46e5">LOCAL TIME TRACKER</text>
+    <text x="55" y="82" font-size="30" font-weight="700">Rapport d'activité</text>
+    <text x="55" y="105" font-size="14" fill="#64748b">20/07/2026</text>
+    <text x="1145" y="84" text-anchor="end" font-size="13" fill="#64748b">Généré localement à 18:42</text>
+
+    <g filter="url(#shadow)">
+      <rect x="55" y="130" width="350" height="105" rx="14" fill="white" stroke="#e2e8f0"/>
+      <rect x="425" y="130" width="350" height="105" rx="14" fill="white" stroke="#e2e8f0"/>
+      <rect x="795" y="130" width="350" height="105" rx="14" fill="white" stroke="#e2e8f0"/>
+    </g>
+    <text x="78" y="161" font-size="14" fill="#64748b">Temps actif</text>
+    <text x="78" y="205" font-size="29" font-weight="700">6 h 24 min</text>
+    <text x="448" y="161" font-size="14" fill="#64748b">Temps inactif détecté</text>
+    <text x="448" y="205" font-size="29" font-weight="700">1 h 08 min</text>
+    <text x="818" y="161" font-size="14" fill="#64748b">Applications utilisées</text>
+    <text x="818" y="205" font-size="29" font-weight="700">7</text>
+
+    <g filter="url(#shadow)"><rect x="55" y="255" width="1090" height="137" rx="14" fill="white" stroke="#e2e8f0"/></g>
+    <text x="78" y="288" font-size="18" font-weight="700">Totaux par catégorie</text>
+    <g>
+      <rect x="78" y="310" width="245" height="56" rx="10" fill="#fff" stroke="#e2e8f0"/>
+      <circle cx="97" cy="338" r="6" fill="#4f46e5"/><text x="112" y="343" font-size="14">Travail</text><text x="303" y="343" text-anchor="end" font-size="14" font-weight="700">4 h 37 min</text>
+      <rect x="338" y="310" width="245" height="56" rx="10" fill="#fff" stroke="#e2e8f0"/>
+      <circle cx="357" cy="338" r="6" fill="#0ea5e9"/><text x="372" y="343" font-size="14">Réseaux sociaux</text><text x="563" y="343" text-anchor="end" font-size="14" font-weight="700">32 min</text>
+      <rect x="598" y="310" width="245" height="56" rx="10" fill="#fff" stroke="#e2e8f0"/>
+      <circle cx="617" cy="338" r="6" fill="#f59e0b"/><text x="632" y="343" font-size="14">Divertissement</text><text x="823" y="343" text-anchor="end" font-size="14" font-weight="700">48 min</text>
+      <rect x="858" y="310" width="264" height="56" rx="10" fill="#fff" stroke="#e2e8f0"/>
+      <circle cx="877" cy="338" r="6" fill="#64748b"/><text x="892" y="343" font-size="14">Autre</text><text x="1102" y="343" text-anchor="end" font-size="14" font-weight="700">27 min</text>
+    </g>
+
+    <g filter="url(#shadow)"><rect x="55" y="412" width="1090" height="142" rx="14" fill="white" stroke="#e2e8f0"/></g>
+    <text x="78" y="446" font-size="18" font-weight="700">Vue chronologique</text>
+    <g font-size="11" fill="#64748b">
+      <text x="140" y="473">00 h</text><text x="381" y="473">06 h</text><text x="622" y="473">12 h</text><text x="863" y="473">18 h</text><text x="1105" y="473">24 h</text>
+    </g>
+    <text x="78" y="514" font-size="12" fill="#64748b">20/07</text>
+    <rect x="140" y="486" width="965" height="34" rx="7" fill="#f8fafc"/>
+    <path d="M381 486v34M622 486v34M863 486v34" stroke="#dbe3ed"/>
+    <rect x="462" y="490" width="95" height="26" rx="5" fill="#4f46e5"/>
+    <rect x="557" y="490" width="23" height="26" rx="5" fill="#94a3b8"/>
+    <rect x="580" y="490" width="132" height="26" rx="5" fill="#4f46e5"/>
+    <rect x="712" y="490" width="34" height="26" rx="5" fill="#0ea5e9"/>
+    <rect x="746" y="490" width="31" height="26" rx="5" fill="#f59e0b"/>
+    <rect x="792" y="490" width="76" height="26" rx="5" fill="#4f46e5"/>
+
+    <g filter="url(#shadow)">
+      <rect x="55" y="574" width="470" height="116" rx="14" fill="white" stroke="#e2e8f0"/>
+      <rect x="545" y="574" width="600" height="116" rx="14" fill="white" stroke="#e2e8f0"/>
+    </g>
+    <text x="78" y="608" font-size="18" font-weight="700">Applications</text>
+    <text x="78" y="636" font-size="11" font-weight="700" fill="#64748b">APPLICATION</text>
+    <text x="492" y="636" text-anchor="end" font-size="11" font-weight="700" fill="#64748b">DURÉE</text>
+    <path d="M78 647h414" stroke="#e2e8f0"/>
+    <text x="78" y="673" font-size="14">Code.exe</text><text x="492" y="673" text-anchor="end" font-size="14" font-weight="600">3 h 12 min</text>
+
+    <text x="568" y="608" font-size="18" font-weight="700">Titres de fenêtre</text>
+    <text x="568" y="636" font-size="11" font-weight="700" fill="#64748b">APPLICATION</text>
+    <text x="735" y="636" font-size="11" font-weight="700" fill="#64748b">TITRE COMPLET</text>
+    <text x="1112" y="636" text-anchor="end" font-size="11" font-weight="700" fill="#64748b">DURÉE</text>
+    <path d="M568 647h544" stroke="#e2e8f0"/>
+    <text x="568" y="673" font-size="14">Code.exe</text><text x="735" y="673" font-size="14">Local Time Tracker — Visual Studio Code</text><text x="1112" y="673" text-anchor="end" font-size="14" font-weight="600">1 h 46 min</text>
+  </g>
+</svg>

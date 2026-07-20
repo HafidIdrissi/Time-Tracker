@@ -1,0 +1,50 @@
+{
+  "default_category": "Autre",
+  "default_color": "#64748b",
+  "categories": [
+    {
+      "name": "Travail",
+      "color": "#4f46e5",
+      "keywords": [
+        "code.exe",
+        "pycharm",
+        "visual studio",
+        "github",
+        "gitlab",
+        "notion",
+        "claude.exe",
+        "chatgpt",
+        "gmail",
+        "word.exe",
+        "excel.exe",
+        "powerpnt.exe",
+        "powershell.exe",
+        "slack",
+        "teams",
+        "outlook"
+      ]
+    },
+    {
+      "name": "Réseaux sociaux",
+      "color": "#0ea5e9",
+      "keywords": ["facebook", "instagram", "linkedin", "reddit", "x.com", "twitter"]
+    },
+    {
+      "name": "Divertissement",
+      "color": "#f59e0b",
+      "keywords": ["youtube", "netflix", "spotify", "twitch", "vlc.exe"]
+    },
+    {
+      "name": "Jeux",
+      "color": "#ec4899",
+      "keywords": [
+        "steam.exe",
+        "tslgame.exe",
+        "pubg",
+        "epicgameslauncher",
+        "gog galaxy",
+        "battle.net"
+      ]
+    }
+  ]
+}
