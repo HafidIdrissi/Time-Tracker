@@ -3,7 +3,7 @@
 #endif
 
 #define MyAppName "Local Time Tracker"
-#define MyAppPublisher "Hafid Idrissi"
+#define MyAppPublisher "H.I. SOLUTIONS"
 #define MyAppURL "https://github.com/HafidIdrissi/Time-Tracker"
 #define MyAppExeName "LocalTimeTracker.exe"
 
@@ -53,6 +53,7 @@ Source: "..\dist\LocalTimeTracker\*"; DestDir: "{app}"; Flags: ignoreversion rec
 Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\PRIVACY.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\CHANGELOG.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\LEGAL.md"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

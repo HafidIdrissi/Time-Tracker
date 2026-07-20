@@ -403,3 +403,12 @@ les copies substantielles. Le logiciel est fourni sans garantie.
 
 La licence MIT est adaptée si l’objectif est de permettre une réutilisation très
 large du projet avec peu de contraintes.
+
+## Éditeur
+
+Local Time Tracker est édité par **H.I. SOLUTIONS**, nom commercial de
+**IDRISSI HAFID, entrepreneur individuel**, SIREN 981 951 080.
+
+Les informations professionnelles complètes sont disponibles dans
+[LEGAL.md](LEGAL.md) et les pratiques relatives aux données dans
+[PRIVACY.md](PRIVACY.md).

@@ -7,7 +7,13 @@ Center : https://publishing-center.softonic.com/
 
 - Nom : Local Time Tracker
 - Version : 1.0.0
-- Éditeur : Hafid Idrissi
+- Éditeur public : H.I. SOLUTIONS
+- Identité juridique : IDRISSI HAFID, entrepreneur individuel
+- SIREN : 981 951 080
+- SIRET : 981 951 080 00028
+- TVA intracommunautaire : FR15981951080
+- Adresse : 67 rue Charles de Gaulle, 78350 Jouy-en-Josas, France
+- Activité : Conseil en systèmes et logiciels informatiques — APE 62.02A
 - Plateforme : Windows 10 et Windows 11, x64
 - Catégorie suggérée : Productivity / Time Management
 - Type de licence : Free / Open Source
@@ -65,7 +71,7 @@ contient aucune publicité, aucun compte et aucune télémétrie.
 ## Champs obligatoires à compléter avant soumission
 
 - E-mail public du développeur : [À COMPLÉTER]
-- Adresse postale professionnelle : [À COMPLÉTER]
+- Adresse postale professionnelle : 67 rue Charles de Gaulle, 78350 Jouy-en-Josas, France
 - URL directe de l’installateur signé : [À COMPLÉTER APRÈS LA RELEASE]
 - Empreinte SHA-256 : [GÉNÉRÉE DANS release/SHA256SUMS.txt]
 - Résultat VirusTotal de l’installateur signé : [À COMPLÉTER]

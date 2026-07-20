@@ -74,9 +74,12 @@ La date placée en haut du document indique la dernière révision.
 
 ## Contact
 
-Développeur : Hafid Idrissi  
+Éditeur : H.I. SOLUTIONS  
+Identité juridique : IDRISSI HAFID, entrepreneur individuel  
+SIREN : 981 951 080  
+Adresse : 67 rue Charles de Gaulle, 78350 Jouy-en-Josas, France  
 Support public : https://github.com/HafidIdrissi/Time-Tracker/issues
 
-Une adresse e-mail publique et, lorsque la plateforme de distribution l’exige,
-une adresse postale professionnelle doivent être ajoutées avant publication sur
-un catalogue tiers.
+Une adresse e-mail professionnelle publique doit être ajoutée avant publication
+sur un catalogue tiers. Les informations juridiques complètes sont disponibles
+dans [LEGAL.md](LEGAL.md).

@@ -1,6 +1,9 @@
 LOCAL TIME TRACKER — INFORMATIONS AVANT INSTALLATION
 
-Éditeur : Hafid Idrissi
+Éditeur : H.I. SOLUTIONS
+Identité juridique : IDRISSI HAFID, entrepreneur individuel
+SIREN : 981 951 080
+Adresse : 67 rue Charles de Gaulle, 78350 Jouy-en-Josas, France
 Version : 1.0.0
 Licence : MIT
 

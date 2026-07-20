@@ -444,7 +444,7 @@ class TimeTrackerApp:
         ttk.Label(
             container,
             text="L'application continue à enregistrer lorsqu'elle est réduite. "
-            "Fermer cette fenêtre arrête le suivi.",
+            f"Fermer cette fenêtre arrête le suivi. · Version {__version__} · H.I. SOLUTIONS",
             style="Subtitle.TLabel",
         ).pack(anchor="w", pady=(14, 0))
 

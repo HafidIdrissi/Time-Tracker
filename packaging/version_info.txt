@@ -14,11 +14,11 @@ VSVersionInfo(
       StringTable(
         '040C04B0',
         [
-          StringStruct('CompanyName', 'Hafid Idrissi'),
+          StringStruct('CompanyName', 'H.I. SOLUTIONS'),
           StringStruct('FileDescription', 'Local Time Tracker'),
           StringStruct('FileVersion', '1.0.0'),
           StringStruct('InternalName', 'LocalTimeTracker'),
-          StringStruct('LegalCopyright', 'Copyright (c) 2026 Hafid Idrissi'),
+          StringStruct('LegalCopyright', 'Copyright (c) 2026 H.I. SOLUTIONS (IDRISSI HAFID)'),
           StringStruct('OriginalFilename', 'LocalTimeTracker.exe'),
           StringStruct('ProductName', 'Local Time Tracker'),
           StringStruct('ProductVersion', '1.0.0')
