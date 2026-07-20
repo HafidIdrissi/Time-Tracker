@@ -27,4 +27,5 @@ Thumbs.db
 # Fichiers de construction de l'application Windows
 build/
 dist/
+release/
 *.spec

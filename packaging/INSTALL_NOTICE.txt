@@ -1,0 +1,36 @@
+LOCAL TIME TRACKER — INFORMATIONS AVANT INSTALLATION
+
+Éditeur : Hafid Idrissi
+Version : 1.0.0
+Licence : MIT
+
+FONCTIONNEMENT ET VIE PRIVÉE
+
+Local Time Tracker observe la fenêtre Windows au premier plan et enregistre
+localement le nom de l’application, le titre de la fenêtre ou de l’onglet, les
+horaires, les durées et l’état d’inactivité clavier/souris.
+
+Les titres de fenêtres peuvent contenir des informations sensibles telles que
+des noms de documents, des recherches ou des sujets de messages.
+
+Toutes les données sont stockées sur cet ordinateur dans :
+%LOCALAPPDATA%\LocalTimeTracker
+
+L’application ne possède aucun compte, aucune publicité et aucune télémétrie.
+Elle ne transmet pas l’historique d’activité sur Internet.
+
+L’utilisateur peut arrêter le suivi, réinitialiser l’historique ou désinstaller
+le logiciel. La désinstallation officielle supprime les données locales créées
+par l’application.
+
+LICENCE ET GARANTIE
+
+Le logiciel est distribué sous licence MIT. Cette licence permet notamment
+l’utilisation, la copie, la modification et la redistribution sous réserve de
+conserver la notice de copyright et le texte de la licence.
+
+Le logiciel est fourni « en l’état », sans garantie. Le texte complet de la
+licence et la politique de confidentialité sont installés avec l’application.
+
+En poursuivant l’installation, vous confirmez avoir pris connaissance de ces
+informations.

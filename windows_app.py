@@ -13,6 +13,7 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import messagebox, ttk
 
+from timetracker import __version__
 from timetracker.analytics import UsageAnalytics, analyze_usage
 from timetracker.categories import CategoryConfigError, load_categorizer
 from timetracker.database import ActivityDatabase
@@ -145,7 +146,7 @@ class TimeTrackerApp:
         self.root.after(250, self.start_tracking)
 
     def _configure_window(self) -> None:
-        self.root.title("Local Time Tracker")
+        self.root.title(f"Local Time Tracker {__version__}")
         self.root.geometry("1060x850")
         self.root.minsize(860, 680)
         self.root.configure(background="#f1f5f9")

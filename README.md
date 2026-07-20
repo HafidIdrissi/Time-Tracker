@@ -144,6 +144,57 @@ indépendante, les données sont placées dans :
 %LOCALAPPDATA%\LocalTimeTracker
 ```
 
+## Créer un installateur distribuable
+
+Pour obtenir un fichier d’installation unique avec assistant Windows,
+raccourcis et désinstallation :
+
+1. installez [Inno Setup 6](https://jrsoftware.org/isinfo.php) ;
+2. lancez la construction de la release.
+
+```powershell
+winget install JRSoftware.InnoSetup
+.\build_release.ps1
+```
+
+Le résultat est placé dans :
+
+```text
+release\LocalTimeTracker-Setup-1.0.0-x64.exe
+release\SHA256SUMS.txt
+```
+
+L’installateur :
+
+- installe l’application pour l’utilisateur courant sans exiger les droits
+  administrateur ;
+- affiche les informations de licence et de confidentialité ;
+- crée un raccourci dans le menu Démarrer ;
+- propose un raccourci Bureau facultatif ;
+- ajoute une désinstallation Windows standard ;
+- supprime les données locales lors de la désinstallation complète.
+
+## Publier une version téléchargeable
+
+Le workflow `.github/workflows/release.yml` construit automatiquement
+l’installateur lorsqu’un tag de version est poussé :
+
+```powershell
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+GitHub Actions exécute les tests, construit l’application et l’installateur,
+calcule son SHA-256 puis joint les fichiers à une GitHub Release. Les visiteurs
+peuvent alors télécharger un véritable installateur depuis la page **Releases**.
+
+Le dossier `packaging/` contient également un dossier de soumission prêt à
+compléter pour Softonic.
+
+Pour une diffusion publique, consultez [SIGNING.md](SIGNING.md). Un certificat
+de signature reconnu est nécessaire pour présenter un éditeur vérifié et
+répondre aux exigences des principaux catalogues Windows.
+
 ## Utilisation en ligne de commande
 
 L’interface graphique est recommandée, mais le moteur peut fonctionner seul :

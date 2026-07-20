@@ -20,6 +20,7 @@ try {
         --clean `
         --windowed `
         --name "LocalTimeTracker" `
+        --version-file "packaging\version_info.txt" `
         --add-data "config.example.json;." `
         windows_app.py
 }
