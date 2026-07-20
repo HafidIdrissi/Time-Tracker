@@ -60,8 +60,12 @@ def collect_periods(
         )
         report_periods.append(
             ReportPeriod(
-                application=period.application,
-                window_title=period.window_title,
+                application="Idle" if period.is_idle else period.application,
+                window_title=(
+                    "No keyboard or mouse activity"
+                    if period.is_idle
+                    else period.window_title
+                ),
                 started_at=started_at.astimezone(),
                 ended_at=ended_at.astimezone(),
                 duration_seconds=duration,
@@ -116,7 +120,7 @@ def _render_timeline_chart(
 
 def _table_rows(rows: list[tuple[str, str, float]], empty_columns: int = 3) -> str:
     if not rows:
-        return f'<tr><td colspan="{empty_columns}" class="empty">Aucune activité</td></tr>'
+        return f'<tr><td colspan="{empty_columns}" class="empty">No activity</td></tr>'
     return "".join(
         "<tr>"
         f"<td>{escape(first)}</td><td>{escape(second)}</td>"
@@ -149,7 +153,7 @@ def render_html(
         f'<span class="dot" style="background:{escape(color, quote=True)}"></span>'
         f'<span>{escape(name)}</span><strong>{format_duration(seconds)}</strong></div>'
         for (name, color), seconds in sorted_categories
-    ) or '<p class="empty">Aucune activité sur cette période.</p>'
+    ) or '<p class="empty">No activity during this period.</p>'
 
     application_rows = [
         (
@@ -179,22 +183,22 @@ def render_html(
         f"<td class=\"duration\">{format_duration(period.duration_seconds)}</td>"
         "</tr>"
         for period in periods
-    ) or '<tr><td colspan="6" class="empty">Aucune activité</td></tr>'
+    ) or '<tr><td colspan="6" class="empty">No activity</td></tr>'
 
     period_label = (
-        f"{start_day:%d/%m/%Y}"
+        f"{start_day:%Y-%m-%d}"
         if start_day == end_day
-        else f"du {start_day:%d/%m/%Y} au {end_day:%d/%m/%Y}"
+        else f"from {start_day:%Y-%m-%d} to {end_day:%Y-%m-%d}"
     )
-    generated_at = datetime.now().astimezone().strftime("%d/%m/%Y à %H:%M")
+    generated_at = datetime.now().astimezone().strftime("%Y-%m-%d at %H:%M")
     timeline_chart = _render_timeline_chart(periods, start_day, end_day)
 
     return f"""<!doctype html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Rapport d'activité — {escape(period_label)}</title>
+  <title>Activity Report — {escape(period_label)}</title>
   <style>
     :root {{ color-scheme: light; --ink:#162033; --muted:#64748b; --line:#e2e8f0;
       --paper:#ffffff; --wash:#f1f5f9; --accent:#4f46e5; }}
@@ -237,28 +241,28 @@ def render_html(
 <body>
 <main>
   <header>
-    <div><div class="eyebrow">Local Time Tracker</div><h1>Rapport d'activité</h1><div class="muted">{escape(period_label)}</div></div>
-    <div class="muted">Généré localement le {generated_at}</div>
+    <div><div class="eyebrow">Local Time Tracker</div><h1>Activity Report</h1><div class="muted">{escape(period_label)}</div></div>
+    <div class="muted">Generated locally on {generated_at}</div>
   </header>
   <section class="cards">
-    <div class="card"><span class="muted">Temps actif</span><strong>{format_duration(active_seconds)}</strong></div>
-    <div class="card"><span class="muted">Temps inactif détecté</span><strong>{format_duration(idle_seconds)}</strong></div>
-    <div class="card"><span class="muted">Applications utilisées</span><strong>{len(application_totals)}</strong></div>
+    <div class="card"><span class="muted">Active time</span><strong>{format_duration(active_seconds)}</strong></div>
+    <div class="card"><span class="muted">Idle time detected</span><strong>{format_duration(idle_seconds)}</strong></div>
+    <div class="card"><span class="muted">Applications used</span><strong>{len(application_totals)}</strong></div>
   </section>
-  <section class="panel"><h2>Totaux par catégorie</h2><div class="categories">{category_cards}</div></section>
+  <section class="panel"><h2>Totals by category</h2><div class="categories">{category_cards}</div></section>
   <section class="panel">
-    <h2>Vue chronologique</h2>
+    <h2>Timeline overview</h2>
     <div class="axis"><span></span><div class="ticks"><span>00 h</span><span>06 h</span><span>12 h</span><span>18 h</span><span>24 h</span></div></div>
     {timeline_chart}
   </section>
   <div class="grid">
-    <section class="panel"><h2>Applications</h2><table><thead><tr><th>Application</th><th>Part</th><th class="duration">Durée</th></tr></thead><tbody>{_table_rows(application_rows)}</tbody></table></section>
-    <section class="panel"><h2>Titres de fenêtre</h2><table><thead><tr><th>Application</th><th>Titre complet</th><th class="duration">Durée</th></tr></thead><tbody>{_table_rows(title_rows)}</tbody></table></section>
+    <section class="panel"><h2>Applications</h2><table><thead><tr><th>Application</th><th>Share</th><th class="duration">Duration</th></tr></thead><tbody>{_table_rows(application_rows)}</tbody></table></section>
+    <section class="panel"><h2>Window titles</h2><table><thead><tr><th>Application</th><th>Full title</th><th class="duration">Duration</th></tr></thead><tbody>{_table_rows(title_rows)}</tbody></table></section>
   </div>
-  <section class="panel timeline-table"><h2>Timeline détaillée</h2><table>
-    <thead><tr><th>Début</th><th>Fin</th><th>Catégorie</th><th>Application</th><th>Fenêtre</th><th class="duration">Durée</th></tr></thead>
+  <section class="panel timeline-table"><h2>Detailed timeline</h2><table>
+    <thead><tr><th>Start</th><th>End</th><th>Category</th><th>Application</th><th>Window</th><th class="duration">Duration</th></tr></thead>
     <tbody>{timeline_rows}</tbody></table></section>
-  <footer>Données conservées sur cet ordinateur · Rapport autonome, sans connexion internet</footer>
+  <footer>Data stored on this computer · Standalone report, no internet connection required</footer>
 </main>
 </body>
 </html>"""

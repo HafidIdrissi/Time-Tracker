@@ -1,56 +1,60 @@
-# Signature des versions Windows
+# Windows Code Signing
 
-La version locale peut être construite sans certificat, mais une distribution
-publique professionnelle doit utiliser une signature Authenticode délivrée par
-une autorité reconnue par Windows.
+The GitHub installer can be downloaded and tested without a digital signature.
+For broad public distribution, especially through download portals, H.I.
+SOLUTIONS should sign the application executable and installer with a trusted
+Authenticode certificate.
 
-## Pourquoi signer
+## Why signing matters
 
-La signature permet à Windows et aux plateformes de téléchargement de vérifier :
+An unsigned executable may trigger Microsoft Defender SmartScreen warnings.
+Signing proves which publisher produced a particular file and detects changes
+made after signing. It does not certify that software is bug-free or secure.
 
-- l’identité de l’éditeur ;
-- que le fichier n’a pas été modifié après sa publication ;
-- que les versions successives proviennent du même éditeur.
+The MIT License is a software copyright license; it is unrelated to an
+Authenticode signing certificate.
 
-Un certificat auto-signé est utile pour des tests internes, mais il n’est pas
-considéré comme fiable sur les ordinateurs des utilisateurs et ne convient pas à
-une publication Softonic.
+## Certificate options
 
-## Options possibles
+- **Organization Validation (OV):** identifies the publisher after validation
+  by a certificate authority. Reputation is generally built over time.
+- **Extended Validation (EV):** uses stronger identity and key-protection
+  requirements and is typically more expensive.
+- **Microsoft Store signing:** available through a separate MSIX packaging and
+  Store submission process.
 
-### Projet open source
+A self-signed certificate is useful only for controlled internal testing. It is
+not trusted automatically on other users' computers and is not suitable for
+public download platforms.
 
-Vérifier l’éligibilité à SignPath Foundation, qui propose une signature gratuite
-à certains projets open source : https://signpath.org/activities/foundation/
+## Build-script integration
 
-### Distribution directe
-
-Utiliser un certificat OV provenant d’une autorité reconnue ou un service de
-signature pris en charge par Microsoft. Le certificat implique une vérification
-d’identité et peut être payant.
-
-### Microsoft Store
-
-Une publication MSIX via le Microsoft Store est signée par Microsoft après
-validation. Ce chemin demande un packaging MSIX distinct de l’installateur Inno
-Setup actuel.
-
-## Signature locale avec SignTool
-
-Après obtention d’un certificat installé dans le magasin Windows, localiser
-`signtool.exe` dans le Windows SDK puis définir :
+`build_release.ps1` supports a certificate installed in the Windows certificate
+store. Set both variables before building:
 
 ```powershell
-$env:TIME_TRACKER_SIGNTOOL = "C:\Program Files (x86)\Windows Kits\10\bin\VERSION\x64\signtool.exe"
-$env:TIME_TRACKER_CERT_SHA1 = "EMPREINTE_SHA1_DU_CERTIFICAT"
-.\build_release.ps1
+$env:TIME_TRACKER_SIGNTOOL = "C:\Path\To\signtool.exe"
+$env:TIME_TRACKER_CERT_SHA1 = "CERTIFICATE_THUMBPRINT"
+.\build_release.ps1 -Version 1.1.0
 ```
 
-Le script signe alors :
+The script signs and verifies both:
 
-1. `dist\LocalTimeTracker\LocalTimeTracker.exe` avant son intégration ;
-2. `release\LocalTimeTracker-Setup-1.0.0-x64.exe` après sa création ;
-3. recalcule le SHA-256 sur le fichier signé final.
+- `dist\LocalTimeTracker\LocalTimeTracker.exe`;
+- `release\LocalTimeTracker-Setup-1.1.0-x64.exe`.
 
-Les variables et certificats de signature ne doivent jamais être ajoutés au
-dépôt Git.
+It uses SHA-256 file digests and a trusted timestamp server, allowing the
+signature to remain valid after the certificate expires if it was valid when
+timestamped.
+
+## Before public submission
+
+1. purchase a certificate from a certificate authority trusted by Windows;
+2. protect the private key and restrict who can sign releases;
+3. build from a clean, reviewed commit;
+4. verify the Authenticode signature and SHA-256 checksum;
+5. scan the exact signed installer submitted to the platform;
+6. publish the installer and checksum from the same GitHub release.
+
+Never commit certificates, private keys, passwords, or signing tokens to this
+repository.

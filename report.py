@@ -15,17 +15,17 @@ def parse_date(value: str) -> date:
     try:
         return date.fromisoformat(value)
     except ValueError as exc:
-        raise argparse.ArgumentTypeError("format attendu : AAAA-MM-JJ") from exc
+        raise argparse.ArgumentTypeError("expected format: YYYY-MM-DD") from exc
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Génère un rapport HTML local depuis la base d'activité."
+        description="Generate a local HTML report from the activity database."
     )
     selection = parser.add_mutually_exclusive_group()
-    selection.add_argument("--date", type=parse_date, help="Jour à analyser (AAAA-MM-JJ)")
-    selection.add_argument("--from", dest="start_date", type=parse_date, help="Premier jour")
-    parser.add_argument("--to", dest="end_date", type=parse_date, help="Dernier jour inclus")
+    selection.add_argument("--date", type=parse_date, help="Day to analyze (YYYY-MM-DD)")
+    selection.add_argument("--from", dest="start_date", type=parse_date, help="First day")
+    parser.add_argument("--to", dest="end_date", type=parse_date, help="Last day, inclusive")
     parser.add_argument("--database", type=Path, default=Path("data/activity.db"))
     parser.add_argument("--config", type=Path, default=None)
     parser.add_argument("--output", type=Path, default=None)
@@ -36,13 +36,13 @@ def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
     if args.end_date and not args.start_date:
-        parser.error("--to doit être utilisé avec --from")
+        parser.error("--to must be used with --from")
 
     today = date.today()
     start_day = args.date or args.start_date or today
     end_day = args.date or args.end_date or start_day
     if end_day < start_day:
-        parser.error("--to doit être postérieur ou égal à --from")
+        parser.error("--to must be later than or equal to --from")
 
     config_path = args.config
     if config_path is None:
@@ -65,9 +65,9 @@ def main() -> int:
             categorizer=categorizer,
         )
     except (CategoryConfigError, OSError) as exc:
-        parser.exit(1, f"Erreur : {exc}\n")
+        parser.exit(1, f"Error: {exc}\n")
 
-    print(f"Rapport généré : {result}")
+    print(f"Report generated: {result}")
     return 0
 
 

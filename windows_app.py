@@ -114,10 +114,10 @@ class TimeTrackerApp:
         self.current_since: datetime | None = None
         self.tracking_started_at: datetime | None = None
 
-        self.status_text = tk.StringVar(value="Arrêté")
-        self.status_detail = tk.StringVar(value="Le suivi n'est pas en cours")
+        self.status_text = tk.StringVar(value="Stopped")
+        self.status_detail = tk.StringVar(value="Tracking is not running")
         self.application_text = tk.StringVar(value="—")
-        self.window_text = tk.StringVar(value="Aucune fenêtre observée")
+        self.window_text = tk.StringVar(value="No window detected")
         self.active_text = tk.StringVar(value="0 min")
         self.idle_text = tk.StringVar(value="0 min")
         self.app_count_text = tk.StringVar(value="0")
@@ -129,7 +129,7 @@ class TimeTrackerApp:
         self.poll_interval_text = tk.StringVar(value="1")
         self.idle_threshold_text = tk.StringVar(value="3")
         self.analysis_range = tk.StringVar(value="today")
-        self.analysis_period_text = tk.StringVar(value="Aujourd'hui")
+        self.analysis_period_text = tk.StringVar(value="Today")
         self.analysis_total_text = tk.StringVar(value="0 min")
         self.analysis_average_text = tk.StringVar(value="0 min")
         self.analysis_longest_text = tk.StringVar(value="0 min")
@@ -210,7 +210,7 @@ class TimeTrackerApp:
         ttk.Label(heading, text="Local Time Tracker", style="Title.TLabel").pack(anchor="w")
         ttk.Label(
             heading,
-            text="Suivi d'activité local et privé sur cet ordinateur",
+            text="Private, local activity tracking on this computer",
             style="Subtitle.TLabel",
         ).pack(anchor="w", pady=(3, 0))
 
@@ -232,14 +232,14 @@ class TimeTrackerApp:
         action_buttons.pack(side="left")
         self.start_button = ttk.Button(
             action_buttons,
-            text="Démarrer le suivi",
+            text="Start tracking",
             command=self.start_tracking,
             style="Accent.TButton",
         )
         self.start_button.pack(side="left")
         self.stop_button = ttk.Button(
             action_buttons,
-            text="Arrêter",
+            text="Stop",
             command=self.stop_tracking,
             style="App.TButton",
             state="disabled",
@@ -247,7 +247,7 @@ class TimeTrackerApp:
         self.stop_button.pack(side="left", padx=(10, 0))
         self.reset_button = ttk.Button(
             action_buttons,
-            text="Réinitialiser",
+            text="Reset",
             command=self.reset_activity,
             style="Danger.TButton",
         )
@@ -255,7 +255,7 @@ class TimeTrackerApp:
 
         settings = ttk.Frame(controls, style="App.TFrame")
         settings.pack(side="right")
-        ttk.Label(settings, text="Mesure", style="Subtitle.TLabel").grid(
+        ttk.Label(settings, text="Sample every", style="Subtitle.TLabel").grid(
             row=0, column=0, sticky="w"
         )
         self.interval_box = ttk.Combobox(
@@ -266,10 +266,10 @@ class TimeTrackerApp:
             state="readonly",
         )
         self.interval_box.grid(row=1, column=0, sticky="w", pady=(3, 0))
-        ttk.Label(settings, text="seconde(s)", style="Subtitle.TLabel").grid(
+        ttk.Label(settings, text="second(s)", style="Subtitle.TLabel").grid(
             row=1, column=1, padx=(5, 18), pady=(3, 0)
         )
-        ttk.Label(settings, text="Inactif après", style="Subtitle.TLabel").grid(
+        ttk.Label(settings, text="Idle after", style="Subtitle.TLabel").grid(
             row=0, column=2, sticky="w"
         )
         self.idle_box = ttk.Combobox(
@@ -293,16 +293,16 @@ class TimeTrackerApp:
         dashboard = ttk.Frame(notebook, style="App.TFrame", padding=(0, 14, 0, 0))
         analysis_tab = ttk.Frame(notebook, style="App.TFrame", padding=(0, 14, 0, 0))
         reports_tab = ttk.Frame(notebook, style="App.TFrame", padding=(0, 14, 0, 0))
-        notebook.add(dashboard, text="  Tableau de bord  ")
-        notebook.add(analysis_tab, text="  Analyse d'utilisation  ")
-        notebook.add(reports_tab, text="  Rapports et données  ")
+        notebook.add(dashboard, text="  Dashboard  ")
+        notebook.add(analysis_tab, text="  Usage analysis  ")
+        notebook.add(reports_tab, text="  Reports and data  ")
 
         current_card = ttk.Frame(dashboard, style="Card.TFrame", padding=(20, 17))
         current_card.pack(fill="x", pady=(0, 14))
         current_card.columnconfigure(0, weight=1)
         ttk.Label(
             current_card,
-            text="UTILISATION EN DIRECT",
+            text="LIVE ACTIVITY",
             style="CardTitle.TLabel",
         ).grid(row=0, column=0, columnspan=2, sticky="w")
         ttk.Label(
@@ -319,29 +319,29 @@ class TimeTrackerApp:
 
         live_details = ttk.Frame(current_card, style="Card.TFrame")
         live_details.grid(row=1, column=1, rowspan=2, sticky="e", padx=(20, 0))
-        self._detail_value(live_details, 0, "Fenêtre active depuis", self.current_duration_text)
-        self._detail_value(live_details, 1, "Inactivité clavier/souris", self.live_idle_text)
-        self._detail_value(live_details, 2, "Dernière mesure", self.last_measure_text)
+        self._detail_value(live_details, 0, "Current window duration", self.current_duration_text)
+        self._detail_value(live_details, 1, "Keyboard/mouse idle", self.live_idle_text)
+        self._detail_value(live_details, 2, "Last sample", self.last_measure_text)
 
         metrics = ttk.Frame(dashboard, style="App.TFrame")
         metrics.pack(fill="x", pady=(0, 14))
         for column in range(4):
             metrics.columnconfigure(column, weight=1, uniform="metrics")
-        self._metric_card(metrics, 0, "TEMPS ACTIF AUJOURD'HUI", self.active_text)
-        self._metric_card(metrics, 1, "TEMPS INACTIF", self.idle_text, padx=10)
+        self._metric_card(metrics, 0, "ACTIVE TIME TODAY", self.active_text)
+        self._metric_card(metrics, 1, "IDLE TIME", self.idle_text, padx=10)
         self._metric_card(metrics, 2, "APPLICATIONS", self.app_count_text, padx=10)
-        self._metric_card(metrics, 3, "PÉRIODES DÉTECTÉES", self.period_count_text, padx=10)
+        self._metric_card(metrics, 3, "PERIODS DETECTED", self.period_count_text, padx=10)
 
         recent_card = ttk.Frame(dashboard, style="Card.TFrame", padding=(18, 15))
         recent_card.pack(fill="both", expand=True)
         recent_header = ttk.Frame(recent_card, style="Card.TFrame")
         recent_header.pack(fill="x", pady=(0, 10))
-        ttk.Label(recent_header, text="ACTIVITÉ RÉCENTE", style="CardTitle.TLabel").pack(
+        ttk.Label(recent_header, text="RECENT ACTIVITY", style="CardTitle.TLabel").pack(
             side="left"
         )
         ttk.Label(
             recent_header,
-            text="Durée du suivi :",
+            text="Tracking time:",
             background="#ffffff",
             foreground="#64748b",
         ).pack(side="right")
@@ -362,11 +362,11 @@ class TimeTrackerApp:
             selectmode="browse",
         )
         headings = {
-            "start": "Début",
+            "start": "Start",
             "application": "Application",
-            "title": "Fenêtre",
-            "duration": "Durée",
-            "state": "État",
+            "title": "Window",
+            "duration": "Duration",
+            "state": "State",
         }
         widths = {"start": 85, "application": 130, "title": 470, "duration": 90, "state": 75}
         for column in columns:
@@ -387,12 +387,12 @@ class TimeTrackerApp:
 
         report_card = ttk.Frame(reports_tab, style="Card.TFrame", padding=(20, 18))
         report_card.pack(fill="x", pady=(0, 14))
-        ttk.Label(report_card, text="CONSULTER UNE JOURNÉE", style="CardTitle.TLabel").grid(
+        ttk.Label(report_card, text="VIEW A DAY", style="CardTitle.TLabel").grid(
             row=0, column=0, columnspan=3, sticky="w"
         )
         ttk.Label(
             report_card,
-            text="Date (AAAA-MM-JJ)",
+            text="Date (YYYY-MM-DD)",
             background="#ffffff",
             foreground="#475569",
         ).grid(row=1, column=0, sticky="w", pady=(12, 4))
@@ -400,14 +400,14 @@ class TimeTrackerApp:
         date_entry.grid(row=2, column=0, sticky="w")
         self.report_button = ttk.Button(
             report_card,
-            text="Générer et ouvrir le rapport",
+            text="Generate and open report",
             command=self.generate_selected_report,
             style="Accent.TButton",
         )
         self.report_button.grid(row=2, column=1, sticky="w", padx=(12, 0))
         ttk.Button(
             report_card,
-            text="Ouvrir le dossier des rapports",
+            text="Open reports folder",
             command=self.open_reports_directory,
             style="App.TButton",
         ).grid(row=2, column=2, sticky="w", padx=(10, 0))
@@ -415,27 +415,27 @@ class TimeTrackerApp:
 
         data_card = ttk.Frame(reports_tab, style="Card.TFrame", padding=(20, 18))
         data_card.pack(fill="x")
-        ttk.Label(data_card, text="GESTION DES DONNÉES", style="CardTitle.TLabel").pack(
+        ttk.Label(data_card, text="DATA MANAGEMENT", style="CardTitle.TLabel").pack(
             anchor="w"
         )
         ttk.Label(
             data_card,
-            text=f"Base locale : {DATABASE_PATH}",
+            text=f"Local database: {DATABASE_PATH}",
             background="#ffffff",
             foreground="#475569",
             wraplength=900,
         ).pack(anchor="w", pady=(12, 3))
         ttk.Label(
             data_card,
-            text="Réinitialiser efface définitivement toutes les périodes enregistrées. "
-            "Les rapports HTML déjà générés sont conservés.",
+            text="Reset permanently deletes all recorded periods. "
+            "Previously generated HTML reports are kept.",
             background="#ffffff",
             foreground="#64748b",
             wraplength=900,
         ).pack(anchor="w", pady=(0, 12))
         self.reset_data_button = ttk.Button(
             data_card,
-            text="Réinitialiser tout l'historique",
+            text="Reset all activity history",
             command=self.reset_activity,
             style="Danger.TButton",
         )
@@ -443,8 +443,8 @@ class TimeTrackerApp:
 
         ttk.Label(
             container,
-            text="L'application continue à enregistrer lorsqu'elle est réduite. "
-            f"Fermer cette fenêtre arrête le suivi. · Version {__version__} · H.I. SOLUTIONS",
+            text="Tracking continues while the app is minimized. "
+            f"Closing this window stops tracking. · Version {__version__} · H.I. SOLUTIONS",
             style="Subtitle.TLabel",
         ).pack(anchor="w", pady=(14, 0))
 
@@ -473,19 +473,19 @@ class TimeTrackerApp:
     def _build_analysis_tab(self, parent: ttk.Frame) -> None:
         selector = ttk.Frame(parent, style="Card.TFrame", padding=(18, 12))
         selector.pack(fill="x", pady=(0, 12))
-        ttk.Label(selector, text="PÉRIODE ANALYSÉE", style="CardTitle.TLabel").pack(
+        ttk.Label(selector, text="ANALYZED PERIOD", style="CardTitle.TLabel").pack(
             side="left", padx=(0, 18)
         )
         ttk.Radiobutton(
             selector,
-            text="Aujourd'hui",
+            text="Today",
             variable=self.analysis_range,
             value="today",
             command=lambda: self._refresh_analysis(schedule=False),
         ).pack(side="left")
         ttk.Radiobutton(
             selector,
-            text="7 derniers jours",
+            text="Last 7 days",
             variable=self.analysis_range,
             value="week",
             command=lambda: self._refresh_analysis(schedule=False),
@@ -501,13 +501,13 @@ class TimeTrackerApp:
         summary.pack(fill="x", pady=(0, 12))
         for column in range(3):
             summary.columnconfigure(column, weight=1, uniform="analysis")
-        self._metric_card(summary, 0, "TEMPS D'ÉCRAN ACTIF", self.analysis_total_text)
-        self._metric_card(summary, 1, "MOYENNE PAR JOUR", self.analysis_average_text, padx=10)
-        self._metric_card(summary, 2, "SESSION LA PLUS LONGUE", self.analysis_longest_text, padx=10)
+        self._metric_card(summary, 0, "ACTIVE SCREEN TIME", self.analysis_total_text)
+        self._metric_card(summary, 1, "DAILY AVERAGE", self.analysis_average_text, padx=10)
+        self._metric_card(summary, 2, "LONGEST SESSION", self.analysis_longest_text, padx=10)
 
         chart_card = ttk.Frame(parent, style="Card.TFrame", padding=(18, 14))
         chart_card.pack(fill="x", pady=(0, 12))
-        ttk.Label(chart_card, text="RÉPARTITION DANS LE TEMPS", style="CardTitle.TLabel").pack(
+        ttk.Label(chart_card, text="USAGE OVER TIME", style="CardTitle.TLabel").pack(
             anchor="w", pady=(0, 7)
         )
         self.usage_canvas = tk.Canvas(
@@ -527,37 +527,37 @@ class TimeTrackerApp:
 
         category_card = ttk.Frame(rankings, style="Card.TFrame", padding=(14, 12))
         category_card.grid(row=0, column=0, sticky="nsew")
-        ttk.Label(category_card, text="CATÉGORIES", style="CardTitle.TLabel").pack(
+        ttk.Label(category_card, text="CATEGORIES", style="CardTitle.TLabel").pack(
             anchor="w", pady=(0, 8)
         )
         self.category_tree = self._create_ranking_tree(
             category_card,
             ("name", "duration", "share"),
-            ("Type", "Durée", "%"),
+            ("Type", "Duration", "%"),
             (100, 65, 36),
         )
 
         app_card = ttk.Frame(rankings, style="Card.TFrame", padding=(14, 12))
         app_card.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
-        ttk.Label(app_card, text="APPLICATIONS LES PLUS UTILISÉES", style="CardTitle.TLabel").pack(
+        ttk.Label(app_card, text="MOST USED APPLICATIONS", style="CardTitle.TLabel").pack(
             anchor="w", pady=(0, 8)
         )
         self.analysis_app_tree = self._create_ranking_tree(
             app_card,
             ("application", "duration", "share"),
-            ("Application", "Durée", "%"),
+            ("Application", "Duration", "%"),
             (105, 65, 36),
         )
 
         tab_card = ttk.Frame(rankings, style="Card.TFrame", padding=(14, 12))
         tab_card.grid(row=0, column=2, sticky="nsew", padx=(10, 0))
-        ttk.Label(tab_card, text="ONGLETS DE NAVIGATEUR LES PLUS UTILISÉS", style="CardTitle.TLabel").pack(
+        ttk.Label(tab_card, text="MOST USED BROWSER TABS", style="CardTitle.TLabel").pack(
             anchor="w", pady=(0, 8)
         )
         self.analysis_tab_tree = self._create_ranking_tree(
             tab_card,
             ("title", "application", "duration"),
-            ("Onglet", "Navigateur", "Durée"),
+            ("Tab", "Browser", "Duration"),
             (210, 85, 65),
         )
 
@@ -626,13 +626,13 @@ class TimeTrackerApp:
             poll_interval = float(self.poll_interval_text.get())
             idle_threshold = float(self.idle_threshold_text.get()) * 60
         except ValueError:
-            messagebox.showwarning("Réglage invalide", "Vérifiez les options de suivi.")
+            messagebox.showwarning("Invalid setting", "Check the tracking options.")
             return
         self.running_poll_interval = poll_interval
         self.running_idle_threshold = idle_threshold
         self.stop_requested = False
         self.tracking_started_at = datetime.now().astimezone()
-        self._set_status("Démarrage…", "Initialisation du suivi", running=True)
+        self._set_status("Starting…", "Initializing tracking", running=True)
         self.tracker_thread = threading.Thread(
             target=self._tracking_worker,
             args=(poll_interval, idle_threshold),
@@ -669,7 +669,7 @@ class TimeTrackerApp:
         tracker = self.tracker
         if tracker is not None:
             tracker.stop()
-        self.status_detail.set("Arrêt en cours…")
+        self.status_detail.set("Stopping…")
         self.stop_button.configure(state="disabled")
 
     def _process_messages(self) -> None:
@@ -679,19 +679,19 @@ class TimeTrackerApp:
                 if kind == "tracker_started":
                     interval = f"{self.running_poll_interval:g}"
                     self._set_status(
-                        "En cours",
-                        f"Surveillance active · mesure toutes les {interval} seconde(s)",
+                        "Running",
+                        f"Tracking active · sampling every {interval} second(s)",
                         running=True,
                     )
                 elif kind == "tracker_stopped":
-                    self._set_status("Arrêté", "Le suivi n'est pas en cours", running=False)
+                    self._set_status("Stopped", "Tracking is not running", running=False)
                     if self.closing:
                         self.root.destroy()
                         return
                     if self.pending_reset:
                         self.root.after(100, self._perform_reset)
                 elif kind == "tracker_error":
-                    self._set_status("Erreur", "Le suivi n'a pas pu démarrer", running=False)
+                    self._set_status("Error", "Tracking could not start", running=False)
                     if not self.closing:
                         messagebox.showerror("Local Time Tracker", str(payload))
                 elif kind == "sample":
@@ -701,8 +701,8 @@ class TimeTrackerApp:
                         self.last_measure_text.set(observed_at.strftime("%H:%M:%S"))
                         self.live_idle_text.set(f"{int(snapshot.idle_seconds)} s")
                         if snapshot.idle_seconds >= self.running_idle_threshold:
-                            application = "Inactif"
-                            window_title = "Aucune activité clavier/souris"
+                            application = "Idle"
+                            window_title = "No keyboard or mouse activity"
                         else:
                             application = snapshot.state.application
                             window_title = snapshot.state.window_title
@@ -717,10 +717,10 @@ class TimeTrackerApp:
                     try:
                         os.startfile(str(payload))
                     except OSError as exc:
-                        messagebox.showerror("Ouverture impossible", str(exc))
+                        messagebox.showerror("Unable to open", str(exc))
                 elif kind == "report_error":
                     self.report_button.configure(state="normal")
-                    messagebox.showerror("Rapport impossible", str(payload))
+                    messagebox.showerror("Unable to generate report", str(payload))
         except queue.Empty:
             pass
         if not self.closing:
@@ -782,9 +782,9 @@ class TimeTrackerApp:
                 else end_day
             )
             self.analysis_period_text.set(
-                end_day.strftime("Aujourd'hui · %d/%m/%Y")
+                end_day.strftime("Today · %Y-%m-%d")
                 if start_day == end_day
-                else f"Du {start_day:%d/%m} au {end_day:%d/%m/%Y}"
+                else f"From {start_day:%Y-%m-%d} to {end_day:%Y-%m-%d}"
             )
             categorizer = load_categorizer(self._configuration_path())
             range_start = local_midnight(start_day)
@@ -843,7 +843,7 @@ class TimeTrackerApp:
         self._replace_tree_rows(
             self.category_tree,
             category_rows,
-            "Aucune activité",
+            "No activity",
         )
 
         app_rows = [
@@ -860,7 +860,7 @@ class TimeTrackerApp:
         self._replace_tree_rows(
             self.analysis_app_tree,
             app_rows,
-            "Aucune application",
+            "No applications",
         )
 
         tab_rows = [
@@ -870,7 +870,7 @@ class TimeTrackerApp:
         self._replace_tree_rows(
             self.analysis_tab_tree,
             tab_rows,
-            "Aucun onglet détecté",
+            "No browser tabs detected",
         )
 
     def _draw_usage_chart(self) -> None:
@@ -884,7 +884,7 @@ class TimeTrackerApp:
                 12,
                 80,
                 anchor="w",
-                text="Aucune activité sur cette période",
+                text="No activity during this period",
                 fill="#94a3b8",
                 font=("Segoe UI", 10),
             )
@@ -968,18 +968,22 @@ class TimeTrackerApp:
                 "end",
                 values=(
                     period.started_at.astimezone().strftime("%H:%M:%S"),
-                    period.application,
-                    period.window_title,
+                    "Idle" if period.is_idle else period.application,
+                    (
+                        "No keyboard or mouse activity"
+                        if period.is_idle
+                        else period.window_title
+                    ),
                     format_clock(period.duration_seconds),
-                    "Inactif" if period.is_idle else "Actif",
+                    "Idle" if period.is_idle else "Active",
                 ),
             )
 
     def reset_activity(self) -> None:
         confirmed = messagebox.askyesno(
-            "Réinitialiser l'historique",
-            "Toutes les périodes enregistrées seront définitivement supprimées.\n\n"
-            "Les rapports HTML déjà générés seront conservés. Continuer ?",
+            "Reset activity history",
+            "All recorded periods will be permanently deleted.\n\n"
+            "Previously generated HTML reports will be kept. Continue?",
             icon="warning",
         )
         if not confirmed:
@@ -991,7 +995,7 @@ class TimeTrackerApp:
         self.reset_button.configure(state="disabled")
         self.reset_data_button.configure(state="disabled")
         if self.restart_after_reset:
-            self.status_detail.set("Arrêt du suivi avant réinitialisation…")
+            self.status_detail.set("Stopping tracking before reset…")
             self.stop_tracking()
         else:
             self._perform_reset()
@@ -1005,7 +1009,7 @@ class TimeTrackerApp:
             self.restart_after_reset = False
             self.reset_button.configure(state="normal")
             self.reset_data_button.configure(state="normal")
-            messagebox.showerror("Réinitialisation impossible", str(exc))
+            messagebox.showerror("Unable to reset", str(exc))
             return
 
         restart = self.restart_after_reset
@@ -1015,7 +1019,7 @@ class TimeTrackerApp:
         self.current_since = None
         self.tracking_started_at = None
         self.application_text.set("—")
-        self.window_text.set("Aucune fenêtre observée")
+        self.window_text.set("No window detected")
         self.current_duration_text.set("00:00:00")
         self.tracking_duration_text.set("00:00:00")
         self.last_measure_text.set("—")
@@ -1029,13 +1033,13 @@ class TimeTrackerApp:
         self.analysis_total_text.set("0 min")
         self.analysis_average_text.set("0 min")
         self.analysis_longest_text.set("0 min")
-        self._replace_tree_rows(self.category_tree, [], "Aucune activité")
-        self._replace_tree_rows(self.analysis_app_tree, [], "Aucune application")
-        self._replace_tree_rows(self.analysis_tab_tree, [], "Aucun onglet détecté")
+        self._replace_tree_rows(self.category_tree, [], "No activity")
+        self._replace_tree_rows(self.analysis_app_tree, [], "No applications")
+        self._replace_tree_rows(self.analysis_tab_tree, [], "No browser tabs detected")
         self._draw_usage_chart()
         self.reset_button.configure(state="normal")
         self.reset_data_button.configure(state="normal")
-        messagebox.showinfo("Historique réinitialisé", "Toutes les activités ont été effacées.")
+        messagebox.showinfo("Activity history reset", "All activity data has been deleted.")
         if restart and not self.closing:
             self.root.after(250, self.start_tracking)
 
@@ -1052,7 +1056,7 @@ class TimeTrackerApp:
         try:
             selected_day = date.fromisoformat(self.report_date.get().strip())
         except ValueError:
-            messagebox.showwarning("Date invalide", "Utilisez le format AAAA-MM-JJ.")
+            messagebox.showwarning("Invalid date", "Use the YYYY-MM-DD format.")
             return
         self.report_button.configure(state="disabled")
         threading.Thread(
@@ -1082,7 +1086,7 @@ class TimeTrackerApp:
         try:
             os.startfile(str(REPORTS_DIRECTORY))
         except OSError as exc:
-            messagebox.showerror("Ouverture impossible", str(exc))
+            messagebox.showerror("Unable to open", str(exc))
 
     def close(self) -> None:
         self.closing = True
@@ -1093,7 +1097,7 @@ class TimeTrackerApp:
 
 def main() -> int:
     if sys.platform != "win32":
-        print("Cette application graphique est disponible uniquement sous Windows.")
+        print("This graphical application is available on Windows only.")
         return 1
     root = tk.Tk()
     TimeTrackerApp(root)

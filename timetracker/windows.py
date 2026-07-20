@@ -13,7 +13,7 @@ class WindowsActivityProvider:
 
     def __init__(self) -> None:
         if sys.platform != "win32":
-            raise RuntimeError("Le suivi d'activité est disponible uniquement sous Windows.")
+            raise RuntimeError("Activity tracking is available on Windows only.")
 
         try:
             import psutil
@@ -22,7 +22,7 @@ class WindowsActivityProvider:
             import win32process
         except ImportError as exc:
             raise RuntimeError(
-                "Dépendances Windows absentes. Exécutez : pip install -r requirements.txt"
+                "Windows dependencies are missing. Run: pip install -r requirements.txt"
             ) from exc
 
         self.psutil: Any = psutil
@@ -40,14 +40,14 @@ class WindowsActivityProvider:
     def _foreground_window(self) -> tuple[str, str]:
         hwnd = self.win32gui.GetForegroundWindow()
         if not hwnd:
-            return "Système", "Aucune fenêtre active"
+            return "System", "No active window"
 
-        title = self.win32gui.GetWindowText(hwnd).strip() or "(Sans titre)"
+        title = self.win32gui.GetWindowText(hwnd).strip() or "(Untitled)"
         try:
             _thread_id, process_id = self.win32process.GetWindowThreadProcessId(hwnd)
             application = self.psutil.Process(process_id).name()
         except (self.psutil.Error, OSError):
-            application = "Processus inconnu"
+            application = "Unknown process"
 
         return application, title
 
@@ -60,4 +60,3 @@ class WindowsActivityProvider:
             state=ActivityState(application, title),
             idle_seconds=idle_seconds,
         )
-

@@ -1,7 +1,7 @@
 @echo off
 cd /d "%~dp0"
 if not exist ".venv\Scripts\pythonw.exe" (
-  echo Environnement Python introuvable. Consultez README.md pour installer le projet.
+  echo Python environment not found. See README.md for setup instructions.
   pause
   exit /b 1
 )

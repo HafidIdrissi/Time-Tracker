@@ -21,12 +21,12 @@ class ReportingTests(unittest.TestCase):
             ended_at=start + timedelta(minutes=30),
             duration_seconds=1800,
             is_idle=False,
-            category="Travail",
+            category="Work",
             color="#4f46e5",
         )
         html = render_html([period], date(2026, 7, 20), date(2026, 7, 20))
 
-        self.assertIn("Rapport d'activité", html)
+        self.assertIn("Activity Report", html)
         self.assertIn("&lt;script&gt;", html)
         self.assertNotIn('<script>alert("x")</script>', html)
         self.assertNotIn("https://", html)
@@ -34,4 +34,3 @@ class ReportingTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

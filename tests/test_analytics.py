@@ -34,22 +34,22 @@ class AnalyticsTests(unittest.TestCase):
             browser_tab_title("chrome.exe", "Gmail - Google Chrome"),
             "Gmail",
         )
-        self.assertIsNone(browser_tab_title("Code.exe", "Projet"))
+        self.assertIsNone(browser_tab_title("Code.exe", "Project"))
 
     def test_usage_is_grouped_by_category_application_and_tab(self) -> None:
         start = datetime(2026, 7, 20, 9, 0, tzinfo=timezone.utc).astimezone()
         periods = [
-            self._period(start, 20, "chrome.exe", "Gmail - Google Chrome", "Travail", "#111111"),
-            self._period(start + timedelta(minutes=20), 10, "chrome.exe", "Gmail - Google Chrome", "Travail", "#111111"),
-            self._period(start + timedelta(minutes=30), 15, "TslGame.exe", "PUBG", "Jeux", "#222222"),
-            self._period(start + timedelta(minutes=45), 5, "Inactif", "Pause", "Inactif", "#999999", idle=True),
+            self._period(start, 20, "chrome.exe", "Gmail - Google Chrome", "Work", "#111111"),
+            self._period(start + timedelta(minutes=20), 10, "chrome.exe", "Gmail - Google Chrome", "Work", "#111111"),
+            self._period(start + timedelta(minutes=30), 15, "TslGame.exe", "PUBG", "Games", "#222222"),
+            self._period(start + timedelta(minutes=45), 5, "Idle", "Break", "Idle", "#999999", idle=True),
         ]
 
         analytics = analyze_usage(periods, date(2026, 7, 20), date(2026, 7, 20))
 
         self.assertEqual(analytics.active_seconds, 45 * 60)
         self.assertEqual(analytics.idle_seconds, 5 * 60)
-        self.assertEqual(analytics.categories[0], ("Travail", "#111111", 30 * 60))
+        self.assertEqual(analytics.categories[0], ("Work", "#111111", 30 * 60))
         self.assertEqual(analytics.applications[0], ("chrome.exe", 30 * 60))
         self.assertEqual(analytics.browser_tabs[0], ("chrome.exe", "Gmail", 30 * 60))
         self.assertEqual(analytics.longest_session_seconds, 45 * 60)

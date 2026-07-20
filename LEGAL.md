@@ -1,37 +1,53 @@
-# Mentions légales — Local Time Tracker
+# Legal Notice
 
-## Éditeur du logiciel
+Last updated: July 20, 2026
 
-**H.I. SOLUTIONS**  
-IDRISSI HAFID, entrepreneur individuel  
-67 rue Charles de Gaulle  
-78350 Jouy-en-Josas, France
+## Publisher
 
-## Identification de l’entreprise
+**Trade name:** H.I. SOLUTIONS<br>
+**Legal name:** IDRISSI HAFID<br>
+**Legal form:** Sole proprietor<br>
+**Micro-enterprise:** Yes<br>
+**Manager:** IDRISSI HAFID
 
-- Nom commercial : H.I. SOLUTIONS
-- SIREN : 981 951 080
-- SIRET du siège : 981 951 080 00028
-- Numéro de TVA intracommunautaire : FR15981951080
-- Forme juridique : entrepreneur individuel — micro-entreprise
-- Immatriculation : inscrit au Registre national des entreprises (RNE)
-- RCS : non inscrit
-- Code APE / NAF : 62.02A — Conseil en systèmes et logiciels informatiques
-- Date de création : 27 novembre 2023
-- Dirigeant et responsable de publication : IDRISSI HAFID
+**Registered office:**<br>
+67 rue Charles de Gaulle<br>
+78350 Jouy-en-Josas<br>
+France
 
-## Activité
+**SIREN:** 981 951 080<br>
+**Head-office SIRET:** 981 951 080 00028<br>
+**VAT number:** FR15981951080<br>
+**APE/NAF code:** 62.02A — Computer systems and software consulting<br>
+**RNE:** Registered<br>
+**RCS:** Not registered<br>
+**Business creation date:** November 27, 2023
 
-Conseil, accompagnement, prestations de services et formation aux entreprises et
-aux particuliers en informatique.
+## Business activity
+
+Consulting, support, services, and training for businesses and individuals in
+information technology. Business sector: programming, consulting, and related
+IT activities. The business is operated as an unregulated liberal profession.
+
+## Software
+
+Local Time Tracker is distributed as free and open-source software under the
+[MIT License](LICENSE). The software is provided without warranty, to the extent
+permitted by applicable law.
+
+## Hosting and distribution
+
+Source code and releases are hosted on GitHub:
+
+<https://github.com/HafidIdrissi/Time-Tracker>
+
+Third-party download platforms may redistribute the installer under their own
+terms. The official source of releases is the GitHub repository above.
 
 ## Contact
 
-- Support public : https://github.com/HafidIdrissi/Time-Tracker/issues
-- E-mail professionnel public : à compléter avant publication sur une plateforme
-  tierce
-
-## Hébergement du code source
-
-Le code source et les versions publiques du logiciel sont hébergés sur GitHub :
-https://github.com/HafidIdrissi/Time-Tracker
+A public business email address has not yet been added to this repository.
+Technical support can currently be requested through
+[GitHub Issues](https://github.com/HafidIdrissi/Time-Tracker/issues). Never post
+activity databases, private reports, passwords, or other sensitive information
+in a public issue.

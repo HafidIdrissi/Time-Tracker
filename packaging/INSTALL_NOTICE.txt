@@ -1,39 +1,39 @@
-LOCAL TIME TRACKER — INFORMATIONS AVANT INSTALLATION
+LOCAL TIME TRACKER 1.1.0
+INSTALLATION NOTICE, PRIVACY SUMMARY, AND MIT LICENSE
 
-Éditeur : H.I. SOLUTIONS
-Identité juridique : IDRISSI HAFID, entrepreneur individuel
-SIREN : 981 951 080
-Adresse : 67 rue Charles de Gaulle, 78350 Jouy-en-Josas, France
-Version : 1.0.0
-Licence : MIT
+Publisher:
+H.I. SOLUTIONS
+IDRISSI HAFID - Sole proprietor
+67 rue Charles de Gaulle, 78350 Jouy-en-Josas, France
+SIREN 981 951 080 - SIRET 981 951 080 00028
+VAT FR15981951080 - APE/NAF 62.02A
 
-FONCTIONNEMENT ET VIE PRIVÉE
+PRIVACY SUMMARY
 
-Local Time Tracker observe la fenêtre Windows au premier plan et enregistre
-localement le nom de l’application, le titre de la fenêtre ou de l’onglet, les
-horaires, les durées et l’état d’inactivité clavier/souris.
+Local Time Tracker observes the foreground Windows window and stores the
+application name, window or browser-tab title, timestamps, durations, and
+keyboard/mouse idle state locally.
 
-Les titres de fenêtres peuvent contenir des informations sensibles telles que
-des noms de documents, des recherches ou des sujets de messages.
+Window titles may contain sensitive information such as document names,
+searches, email subjects, account names, or private website titles.
 
-Toutes les données sont stockées sur cet ordinateur dans :
+The default installed data location is:
 %LOCALAPPDATA%\LocalTimeTracker
 
-L’application ne possède aucun compte, aucune publicité et aucune télémétrie.
-Elle ne transmet pas l’historique d’activité sur Internet.
+The application has no user account, advertising, or telemetry. It does not
+send activity history over the Internet.
 
-L’utilisateur peut arrêter le suivi, réinitialiser l’historique ou désinstaller
-le logiciel. La désinstallation officielle supprime les données locales créées
-par l’application.
+The user can stop tracking, reset the activity history, or uninstall the
+software. Reset keeps previously generated HTML reports. The official
+uninstaller removes local data created by the installed application.
 
-LICENCE ET GARANTIE
+MIT LICENSE SUMMARY
 
-Le logiciel est distribué sous licence MIT. Cette licence permet notamment
-l’utilisation, la copie, la modification et la redistribution sous réserve de
-conserver la notice de copyright et le texte de la licence.
+This software is free and open source. The MIT License permits personal and
+commercial use, copying, modification, and redistribution, provided that the
+copyright notice and license text are preserved.
 
-Le logiciel est fourni « en l’état », sans garantie. Le texte complet de la
-licence et la politique de confidentialité sont installés avec l’application.
+The software is provided without warranty. The complete MIT License, privacy
+policy, changelog, and legal notice are installed with the application.
 
-En poursuivant l’installation, vous confirmez avoir pris connaissance de ces
-informations.
+By continuing the installation, you acknowledge this notice.

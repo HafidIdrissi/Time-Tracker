@@ -1,7 +1,7 @@
 VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(1, 0, 0, 0),
-    prodvers=(1, 0, 0, 0),
+    filevers=(1, 1, 0, 0),
+    prodvers=(1, 1, 0, 0),
     mask=0x3f,
     flags=0x0,
     OS=0x40004,
@@ -12,19 +12,19 @@ VSVersionInfo(
   kids=[
     StringFileInfo([
       StringTable(
-        '040C04B0',
+        '040904B0',
         [
           StringStruct('CompanyName', 'H.I. SOLUTIONS'),
           StringStruct('FileDescription', 'Local Time Tracker'),
-          StringStruct('FileVersion', '1.0.0'),
+          StringStruct('FileVersion', '1.1.0'),
           StringStruct('InternalName', 'LocalTimeTracker'),
           StringStruct('LegalCopyright', 'Copyright (c) 2026 H.I. SOLUTIONS (IDRISSI HAFID)'),
           StringStruct('OriginalFilename', 'LocalTimeTracker.exe'),
           StringStruct('ProductName', 'Local Time Tracker'),
-          StringStruct('ProductVersion', '1.0.0')
+          StringStruct('ProductVersion', '1.1.0')
         ]
       )
     ]),
-    VarFileInfo([VarStruct('Translation', [1036, 1200])])
+    VarFileInfo([VarStruct('Translation', [1033, 1200])])
   ]
 )

@@ -1,85 +1,84 @@
-# Politique de confidentialité — Local Time Tracker
+# Privacy Policy
 
-Dernière mise à jour : 20 juillet 2026
+Last updated: July 20, 2026
 
-## Résumé
+Local Time Tracker is a local activity-tracking application published by
+**H.I. SOLUTIONS**, operated by IDRISSI HAFID as a sole proprietor. The
+application requires no account and does not send activity data to the
+publisher.
 
-Local Time Tracker est conçu pour fonctionner entièrement sur l’ordinateur de
-l’utilisateur. Il ne nécessite aucun compte et n’envoie aucune donnée vers un
-serveur, le développeur ou un service d’analyse.
+## Data recorded
 
-## Données enregistrées
+While tracking is active, the application records:
 
-Lorsque le suivi est actif, l’application enregistre :
+- the foreground application's process name;
+- the foreground window or browser-tab title;
+- the start and end time of each activity period;
+- the calculated duration;
+- whether keyboard and mouse inactivity exceeded the selected threshold.
 
-- le nom du processus de l’application au premier plan ;
-- le titre de la fenêtre ou de l’onglet actif ;
-- les heures de début et de fin de chaque période ;
-- la durée de chaque période ;
-- l’état actif ou inactif déterminé à partir des entrées clavier et souris.
+Window titles can contain sensitive information, including document names,
+searches, email subjects, user names, or private web page titles.
 
-Les titres de fenêtres peuvent contenir des informations sensibles, par exemple
-des noms de documents, des recherches, des sujets de messages ou des noms de
-projets.
+## Purpose
 
-## Finalité
+The recorded data is used only to display the dashboard, calculate usage
+statistics, and generate reports requested by the user.
 
-Ces informations sont utilisées uniquement pour afficher le tableau de bord,
-calculer les statistiques d’utilisation et générer les rapports demandés par
-l’utilisateur.
+## Storage
 
-## Stockage
-
-Les données sont conservées dans une base SQLite locale. Pour une installation
-Windows standard, elles se trouvent dans :
+Data is stored in a local SQLite database. For the installed application, the
+default path is:
 
 ```text
 %LOCALAPPDATA%\LocalTimeTracker\data\activity.db
 ```
 
-Les rapports HTML générés sont stockés dans le même dossier local, sous
-`reports/`.
+HTML reports are stored under:
 
-## Transmission et services tiers
+```text
+%LOCALAPPDATA%\LocalTimeTracker\reports\
+```
 
-L’application :
+When the app is run from source, data is stored in the repository's `data` and
+`reports` folders.
 
-- ne transmet pas l’historique d’activité ;
-- n’utilise aucun outil de télémétrie ou de publicité ;
-- n’intègre aucun traceur ;
-- ne vend ni ne partage de données ;
-- ne nécessite aucune connexion Internet pour fonctionner.
+## Network access and third parties
 
-GitHub ou une plateforme de téléchargement peut enregistrer ses propres données
-techniques lorsqu’un utilisateur visite une page ou télécharge l’installateur.
-Ces traitements relèvent de la politique de la plateforme concernée et non de
-l’application locale.
+The application:
 
-## Contrôle et suppression
+- does not upload activity history;
+- does not use telemetry, analytics, advertising, or tracking SDKs;
+- does not create an online account;
+- does not sell or share activity data.
 
-L’utilisateur peut effacer l’historique depuis le bouton **Réinitialiser** de
-l’application. La désinstallation officielle supprime également les données
-locales créées par l’application.
+GitHub or a third-party download platform may process its own technical data
+when a visitor views a page or downloads an installer. Those services operate
+under their own privacy policies and are separate from the local application.
 
-## Sécurité
+## Retention and deletion
 
-Les données ne sont pas chiffrées par l’application. Elles bénéficient des
-protections du compte Windows et du disque de l’utilisateur. Toute personne
-ayant accès au compte ou au fichier SQLite peut potentiellement les consulter.
+Activity remains on the computer until the user resets the history, deletes the
+database, or uninstalls the application with the official uninstaller. Resetting
+the history does not delete previously generated HTML reports. Those reports
+must be deleted separately if they are no longer needed.
 
-## Modifications
+## Security
 
-Cette politique peut être mise à jour lors d’un changement de fonctionnalité.
-La date placée en haut du document indique la dernière révision.
+The database and reports are not encrypted by the application. They rely on the
+security of the Windows account, filesystem, and disk. Anyone with access to the
+files may be able to read the recorded window titles.
 
-## Contact
+## Contact and publisher
 
-Éditeur : H.I. SOLUTIONS  
-Identité juridique : IDRISSI HAFID, entrepreneur individuel  
-SIREN : 981 951 080  
-Adresse : 67 rue Charles de Gaulle, 78350 Jouy-en-Josas, France  
-Support public : https://github.com/HafidIdrissi/Time-Tracker/issues
+**H.I. SOLUTIONS**<br>
+IDRISSI HAFID — Sole proprietor<br>
+67 rue Charles de Gaulle, 78350 Jouy-en-Josas, France<br>
+SIREN: 981 951 080<br>
+SIRET: 981 951 080 00028<br>
+VAT number: FR15981951080
 
-Une adresse e-mail professionnelle publique doit être ajoutée avant publication
-sur un catalogue tiers. Les informations juridiques complètes sont disponibles
-dans [LEGAL.md](LEGAL.md).
+A public support email has not yet been published. Until one is added, technical
+questions and privacy requests can be submitted through the repository's
+[GitHub Issues](https://github.com/HafidIdrissi/Time-Tracker/issues) page. Do not
+include private activity data in an issue.

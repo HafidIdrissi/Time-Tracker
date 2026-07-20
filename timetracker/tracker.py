@@ -13,8 +13,8 @@ from .models import ActivitySnapshot, ActivityState
 LOGGER = logging.getLogger(__name__)
 
 IDLE_STATE = ActivityState(
-    application="Inactif",
-    window_title="Aucune activité clavier/souris",
+    application="Idle",
+    window_title="No keyboard or mouse activity",
     is_idle=True,
 )
 
@@ -91,7 +91,7 @@ class ActivityTracker:
         """Poll until ``stop`` is called or Ctrl+C is received."""
 
         LOGGER.info(
-            "Tracker démarré (intervalle %.1fs, inactivité après %.0fs)",
+            "Tracker started (%.1fs interval, idle after %.0fs)",
             self.poll_interval,
             self.idle_threshold,
         )
@@ -103,12 +103,11 @@ class ActivityTracker:
                     self.record_snapshot(snapshot, observed_at)
                 except Exception:
                     # A transient inaccessible window must not stop a day of tracking.
-                    LOGGER.exception("Impossible de lire la fenêtre active")
+                    LOGGER.exception("Unable to read the active window")
                 self._stop_event.wait(self.poll_interval)
         finally:
             self._update_current(self._now())
-            LOGGER.info("Tracker arrêté")
+            LOGGER.info("Tracker stopped")
 
     def stop(self) -> None:
         self._stop_event.set()
-

@@ -44,9 +44,21 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create $env:GITHUB_REF_NAME `
-            .\release\LocalTimeTracker-Setup-*-x64.exe `
-            .\release\SHA256SUMS.txt `
-            --verify-tag `
-            --generate-notes `
-            --title "Local Time Tracker $env:GITHUB_REF_NAME"
+          $tag = $env:GITHUB_REF_NAME
+          $installer = Get-ChildItem .\release\LocalTimeTracker-Setup-*-x64.exe |
+            Select-Object -First 1
+
+          gh release view $tag --json tagName *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag `
+              $installer.FullName `
+              .\release\SHA256SUMS.txt `
+              --clobber
+          } else {
+            gh release create $tag `
+              $installer.FullName `
+              .\release\SHA256SUMS.txt `
+              --verify-tag `
+              --generate-notes `
+              --title "Local Time Tracker $tag"
+          }

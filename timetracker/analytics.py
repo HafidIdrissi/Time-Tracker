@@ -73,7 +73,7 @@ def browser_tab_title(application: str, window_title: str) -> str | None:
         if title.casefold().endswith(suffix.casefold()):
             title = title[: -len(suffix)].strip()
             break
-    return title or "(Onglet sans titre)"
+    return title or "(Untitled tab)"
 
 
 def _longest_active_session(periods: list[ReportPeriod]) -> float:

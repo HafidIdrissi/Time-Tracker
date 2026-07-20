@@ -14,25 +14,25 @@ from timetracker.windows import WindowsActivityProvider
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Enregistre localement la fenêtre Windows active."
+        description="Record the active Windows window locally."
     )
     parser.add_argument(
         "--database",
         type=Path,
         default=Path("data/activity.db"),
-        help="Base SQLite (défaut : data/activity.db)",
+        help="SQLite database (default: data/activity.db)",
     )
     parser.add_argument(
         "--interval",
         type=float,
         default=5.0,
-        help="Intervalle de mesure en secondes (défaut : 5)",
+        help="Sampling interval in seconds (default: 5)",
     )
     parser.add_argument(
         "--idle-after",
         type=float,
         default=180.0,
-        help="Seuil d'inactivité en secondes (défaut : 180)",
+        help="Idle threshold in seconds (default: 180)",
     )
     return parser
 

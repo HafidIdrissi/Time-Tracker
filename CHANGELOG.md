@@ -1,21 +1,29 @@
-# Historique des versions
+# Changelog
 
-Les changements importants de Local Time Tracker sont documentés ici. Le projet
-utilise une numérotation de version compatible avec le versionnage sémantique.
+All notable changes to this project are documented here. The project follows
+[Semantic Versioning](https://semver.org/).
 
-## 1.0.0 — 2026-07-20
+## [1.1.0] - 2026-07-20
 
-Première version publique.
+### Changed
 
-### Fonctionnalités
+- translated the entire desktop interface, reports, installer, command-line
+  tools, categories, build messages, and documentation into English;
+- renamed the source launcher to `Launch Time Tracker.cmd`;
+- made GitHub release publication idempotent by replacing assets when a release
+  already exists for the tag.
 
-- suivi local de la fenêtre Windows au premier plan ;
-- détection configurable de l’inactivité clavier et souris ;
-- interface graphique avec activité en direct ;
-- analyses pour aujourd’hui et les 7 derniers jours ;
-- classements par catégorie, application et onglet de navigateur ;
-- stockage SQLite local ;
-- rapports HTML autonomes ;
-- catégories personnalisables ;
-- réinitialisation de l’historique ;
-- création d’un exécutable Windows et d’un installateur distribuable.
+## [1.0.0] - 2026-07-20
+
+### Added
+
+- local foreground-window activity tracking for Windows;
+- configurable keyboard and mouse idle detection;
+- desktop interface with live activity;
+- analysis for today and the last seven days;
+- rankings by category, application, and browser tab;
+- local SQLite storage and standalone HTML reports;
+- Start, Stop, Reset, reports-folder, and data-management controls;
+- PyInstaller executable and distributable Inno Setup installer;
+- automated tests and tag-triggered GitHub release workflow;
+- MIT License, privacy policy, legal notice, and signing guidance.

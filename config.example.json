@@ -1,9 +1,9 @@
 {
-  "default_category": "Autre",
+  "default_category": "Other",
   "default_color": "#64748b",
   "categories": [
     {
-      "name": "Travail",
+      "name": "Work",
       "color": "#4f46e5",
       "keywords": [
         "code.exe",
@@ -25,17 +25,17 @@
       ]
     },
     {
-      "name": "Réseaux sociaux",
+      "name": "Social Media",
       "color": "#0ea5e9",
       "keywords": ["facebook", "instagram", "linkedin", "reddit", "x.com", "twitter"]
     },
     {
-      "name": "Divertissement",
+      "name": "Entertainment",
       "color": "#f59e0b",
       "keywords": ["youtube", "netflix", "spotify", "twitch", "vlc.exe"]
     },
     {
-      "name": "Jeux",
+      "name": "Games",
       "color": "#ec4899",
       "keywords": [
         "steam.exe",

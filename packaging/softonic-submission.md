@@ -1,90 +1,93 @@
-# Dossier de soumission Softonic — Local Time Tracker 1.0.0
+# Download Platform Submission Sheet
 
-Ce document regroupe les informations à copier dans le Softonic Publishing
-Center : https://publishing-center.softonic.com/
+Use this sheet for Softonic or another software catalog only after the final
+installer has been signed, verified, and published in an official GitHub
+release.
 
-## Informations générales
+## Product details
 
-- Nom : Local Time Tracker
-- Version : 1.0.0
-- Éditeur public : H.I. SOLUTIONS
-- Identité juridique : IDRISSI HAFID, entrepreneur individuel
-- SIREN : 981 951 080
-- SIRET : 981 951 080 00028
-- TVA intracommunautaire : FR15981951080
-- Adresse : 67 rue Charles de Gaulle, 78350 Jouy-en-Josas, France
-- Activité : Conseil en systèmes et logiciels informatiques — APE 62.02A
-- Plateforme : Windows 10 et Windows 11, x64
-- Catégorie suggérée : Productivity / Time Management
-- Type de licence : Free / Open Source
-- Licence du code : MIT
-- Langues : français et anglais pour l’installateur ; interface française
-- Prix : gratuit
-- Publicité : aucune
-- Achats intégrés : aucun
-- Compte obligatoire : non
+- Product: Local Time Tracker
+- Version: 1.1.0
+- Publisher: H.I. SOLUTIONS
+- Developer/legal operator: IDRISSI HAFID, sole proprietor
+- License: MIT License / Free and open-source software
+- Price: Free
+- Platform: Windows 10 and Windows 11, 64-bit
+- Suggested category: Productivity / Time Management
+- Interface language: English
+- Installer language: English
+- Official website and source:
+  <https://github.com/HafidIdrissi/Time-Tracker>
+- Support: <https://github.com/HafidIdrissi/Time-Tracker/issues>
 
-## Description courte
+## Short description
 
-Suivez localement le temps passé dans vos applications et onglets Windows, avec
-activité en direct, analyses sur 7 jours et rapports privés hors ligne.
+Track time spent in Windows applications and browser tabs locally, with live
+activity, seven-day analysis, idle detection, and private offline reports.
 
-## Description longue
+## Long description
 
-Local Time Tracker est une application Windows gratuite et open source qui aide
-à comprendre l’utilisation quotidienne de l’ordinateur sans envoyer de données
-sur Internet. Elle détecte l’application et la fenêtre au premier plan, mesure
-les périodes actives, identifie l’inactivité clavier et souris et regroupe les
-usages par catégories personnalisables.
+Local Time Tracker is a free, open-source Windows application that helps users
+understand daily computer usage without uploading activity data. It detects the
+foreground application and window, measures active periods, identifies keyboard
+and mouse inactivity, and groups activity into configurable categories.
 
-Le tableau de bord montre en direct l’application utilisée, la durée de la
-fenêtre courante et les activités récentes. La vue d’analyse présente le temps
-actif, la session la plus longue, un histogramme par heure ou par jour, les
-catégories dominantes, les applications les plus utilisées et les onglets de
-navigateur qui occupent le plus de temps. Des rapports HTML autonomes peuvent
-être générés pour une date ou une période.
+The dashboard displays the current application, window title, current duration,
+idle time, and recent activity. Usage analysis shows active time, the longest
+session, an hourly or daily chart, leading categories, most used applications,
+and frequently used browser tabs. Standalone HTML reports provide a detailed
+timeline and can be opened without an internet connection.
 
-Toutes les données sont stockées localement dans SQLite. L’application ne
-contient aucune publicité, aucun compte et aucune télémétrie.
+All activity is stored in a local SQLite database. The application has no
+account, advertising, or telemetry.
 
-## Fonctionnalités principales
+## Feature list
 
-- suivi en direct de la fenêtre Windows active ;
-- détection de l’inactivité configurable ;
-- analyses aujourd’hui / 7 derniers jours ;
-- classement des applications et onglets ;
-- catégories personnalisables ;
-- rapports HTML autonomes ;
-- stockage SQLite local ;
-- remise à zéro de l’historique ;
-- aucune télémétrie ni publicité ;
-- désinstallation complète.
+- live foreground-window tracking;
+- configurable idle detection;
+- Today and Last 7 days analysis;
+- application and browser-tab rankings;
+- offline HTML reports;
+- local SQLite storage;
+- Start, Stop, and Reset controls;
+- standard per-user Windows installation and uninstallation.
 
-## Liens
+## Privacy disclosure
 
-- Site / code source : https://github.com/HafidIdrissi/Time-Tracker
-- Téléchargement stable : https://github.com/HafidIdrissi/Time-Tracker/releases/latest
-- Support : https://github.com/HafidIdrissi/Time-Tracker/issues
-- Politique de confidentialité : https://github.com/HafidIdrissi/Time-Tracker/blob/main/PRIVACY.md
-- Licence : https://github.com/HafidIdrissi/Time-Tracker/blob/main/LICENSE
+Window titles may contain sensitive information. Activity stays on the user's
+computer and is not transmitted by the application. See `PRIVACY.md` in the
+repository for the complete policy.
 
-## Champs obligatoires à compléter avant soumission
+## Release assets to provide
 
-- E-mail public du développeur : [À COMPLÉTER]
-- Adresse postale professionnelle : 67 rue Charles de Gaulle, 78350 Jouy-en-Josas, France
-- URL directe de l’installateur signé : [À COMPLÉTER APRÈS LA RELEASE]
-- Empreinte SHA-256 : [GÉNÉRÉE DANS release/SHA256SUMS.txt]
-- Résultat VirusTotal de l’installateur signé : [À COMPLÉTER]
-- Certificat de signature / nom d’éditeur vérifié : [À COMPLÉTER]
+- signed installer: `LocalTimeTracker-Setup-1.1.0-x64.exe`;
+- SHA-256 checksum from `SHA256SUMS.txt`;
+- direct URL to the signed GitHub release asset: **add after release**;
+- repository URL and MIT License URL;
+- privacy-policy URL;
+- VirusTotal result for the exact signed installer: **add before submission**.
 
-## Visuels à préparer
+## Screenshots
 
-- icône carrée haute résolution, idéalement 512 × 512 px ;
-- capture du tableau de bord ;
-- capture de l’analyse Aujourd’hui ;
-- capture de l’analyse 7 derniers jours ;
-- capture d’un rapport HTML ;
-- image de couverture sans donnée personnelle.
+Recommended images:
 
-Avant chaque capture, utiliser une base de démonstration ne contenant aucun nom,
-e-mail, document ou titre de fenêtre personnel.
+- Dashboard with neutral demonstration data;
+- Today usage analysis;
+- Last 7 days analysis;
+- standalone HTML report;
+- English installer wizard.
+
+Before taking screenshots, use a demonstration database that contains no real
+names, email addresses, documents, account details, or private window titles.
+
+## Submission checklist
+
+- [ ] version matches the application, installer, tag, and release;
+- [ ] automated tests pass;
+- [ ] installer is Authenticode-signed and signature verification passes;
+- [ ] SHA-256 checksum is published;
+- [ ] antivirus scan is complete;
+- [ ] installation, launch, tracking, report, reset, and uninstall are tested;
+- [ ] screenshots contain demonstration data only;
+- [ ] download URL points to the official GitHub release asset;
+- [ ] privacy policy and legal notice are publicly accessible.
