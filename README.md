@@ -70,8 +70,8 @@ Get-Content .\SHA256SUMS.txt
   [latest release](https://github.com/HafidIdrissi/Time-Tracker/releases/latest)
   and verify again.
 
-Keep the main install steps short: verification is optional, but recommended
-when you want extra confidence in the binary you are about to install.
+Verification is optional, but recommended when you want extra confidence
+in the binary you are about to install.
 
 > [!NOTE]
 > The current installer may be unsigned. Windows SmartScreen can therefore show
