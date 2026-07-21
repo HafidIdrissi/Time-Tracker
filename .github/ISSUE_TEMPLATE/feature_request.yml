@@ -1,0 +1,45 @@
+name: Feature request
+description: Suggest a focused improvement to Local Time Tracker
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Explain the user problem first. Proposals should preserve local-first storage and transparent tracking.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the situation and who experiences it.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the smallest useful behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Explain current workarounds or other approaches.
+  - type: textarea
+    id: privacy
+    attributes:
+      label: Privacy and data impact
+      description: Would this collect, store, export, delete, or transmit any additional data?
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and the roadmap.
+          required: true
+        - label: This request does not depend on mandatory accounts, advertising, or hidden monitoring.
+          required: true

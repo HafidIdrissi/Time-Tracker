@@ -1,0 +1,66 @@
+name: Bug report
+description: Report a reproducible problem with Local Time Tracker
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a problem. Never upload a personal activity database or a report containing private window titles.
+  - type: input
+    id: version
+    attributes:
+      label: Local Time Tracker version
+      description: Find this in the application footer or release name.
+      placeholder: 1.1.0
+    validations:
+      required: true
+  - type: dropdown
+    id: installation
+    attributes:
+      label: Installation method
+      options:
+        - GitHub Windows installer
+        - Built from source
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: Windows 11 24H2, 64-bit
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the actual behavior and the behavior you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Open...
+        2. Click...
+        3. Observe...
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add sanitized logs or screenshots using demonstration data only.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed private window titles, account names, personal reports, databases, and credentials.
+          required: true
+        - label: I searched existing issues for the same problem.
+          required: true
