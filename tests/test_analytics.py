@@ -30,10 +30,27 @@ class AnalyticsTests(unittest.TestCase):
         )
 
     def test_browser_titles_are_cleaned(self) -> None:
-        self.assertEqual(
-            browser_tab_title("chrome.exe", "Gmail - Google Chrome"),
-            "Gmail",
-        )
+        cases = [
+            ("chrome.exe", "Gmail - Google Chrome", "Gmail"),
+            ("msedge.exe", "Docs – Microsoft Edge", "Docs"),
+            ("firefox.exe", "YouTube — Mozilla Firefox", "YouTube"),
+            ("brave.exe", "ChatGPT - Brave", "ChatGPT"),
+            ("opera.exe", "GitHub – Opera", "GitHub"),
+            ("opera_gx.exe", "Discord — Opera", "Discord"),
+            ("vivaldi.exe", "News - Vivaldi", "News"),
+            ("CHROME.EXE", "Mail - Google Chrome", "Mail"),
+            ("Chrome.Exe", "Calendar – Google Chrome", "Calendar"),
+            ("chrome.exe", "", "(Untitled tab)"),
+            ("chrome.exe", "   ", "(Untitled tab)"),
+        ]
+
+        for application, title, expected in cases:
+            with self.subTest(application=application, title=title):
+                self.assertEqual(
+                    browser_tab_title(application, title),
+                    expected,
+                )
+
         self.assertIsNone(browser_tab_title("Code.exe", "Project"))
 
     def test_usage_is_grouped_by_category_application_and_tab(self) -> None:
