@@ -55,6 +55,8 @@ class AnalyticsTests(unittest.TestCase):
             ("opera.exe", "Mail – Opera", "Mail"),
             ("opera.exe", "Mail — Opera", "Mail"),
             ("opera_gx.exe", "Stream - Opera", "Stream"),
+            ("opera_gx.exe", "Stream – Opera", "Stream"),
+            ("opera_gx.exe", "Stream — Opera", "Stream"),
             ("vivaldi.exe", "Notes - Vivaldi", "Notes"),
             ("vivaldi.exe", "Notes – Vivaldi", "Notes"),
             ("vivaldi.exe", "Notes — Vivaldi", "Notes"),
