@@ -14,7 +14,7 @@ class DatabaseTests(unittest.TestCase):
         origin = datetime(2026, 7, 20, 8, 0, tzinfo=timezone.utc)
         with tempfile.TemporaryDirectory() as directory:
             with ActivityDatabase(Path(directory) / "activity.db") as database:
-                first_id = database.create_period(ActivityState("Code.exe", "Projet"), origin)
+                first_id = database.create_period(ActivityState("Code.exe", "Project"), origin)
                 database.update_period(first_id, origin, origin + timedelta(seconds=20))
                 second_id = database.create_period(
                     ActivityState("chrome.exe", "Documentation"),
