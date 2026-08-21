@@ -55,6 +55,17 @@ class AnalyticsTests(unittest.TestCase):
         self.assertEqual(analytics.longest_session_seconds, 45 * 60)
         self.assertEqual(len(analytics.buckets), 24)
 
+    def test_weekly_average_includes_calendar_days_without_activity(self) -> None:
+        start = datetime(2026, 7, 20, 9, 0, tzinfo=timezone.utc).astimezone()
+        periods = [
+            self._period(start, 70, "Code.exe", "Project", "Work", "#111111")
+        ]
+
+        analytics = analyze_usage(periods, date(2026, 7, 20), date(2026, 7, 26))
+
+        self.assertEqual(analytics.average_daily_seconds, 10 * 60)
+        self.assertEqual(len(analytics.buckets), 7)
+
 
 if __name__ == "__main__":
     unittest.main()

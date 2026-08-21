@@ -1,4 +1,4 @@
-# Environnements et caches Python
+# Python environments and caches
 .venv/
 venv/
 __pycache__/
@@ -6,7 +6,7 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 
-# Données personnelles : ne jamais versionner la base locale
+# Personal data: never commit the local database
 data/
 *.db
 *.db-shm
@@ -14,17 +14,17 @@ data/
 *.sqlite
 *.sqlite3
 
-# Rapports générés et configuration personnelle
+# Generated reports and personal configuration
 reports/
 config.json
 
-# IDE et système
+# IDE and operating system files
 .idea/
 .vscode/
 .DS_Store
 Thumbs.db
 
-# Fichiers de construction de l'application Windows
+# Windows application build files
 build/
 dist/
 release/
