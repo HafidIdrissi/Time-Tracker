@@ -18,7 +18,7 @@ telemetry.
 Download the `LocalTimeTracker-Setup-<version>-x64.exe` installer from the
 latest release. A SHA-256 checksum is published beside every installer.
 
-![Local Time Tracker offline activity report](assets/report-preview.svg)
+![Local Time Tracker tracking activity, analysing usage, and generating an offline report](assets/demo.gif)
 
 ## Why Local Time Tracker?
 
@@ -122,6 +122,8 @@ separate visits to the same tab are added together.
 - generate an offline HTML report for a selected date;
 - open the local reports folder;
 - reset all recorded activity from the interface.
+
+![Layout of a generated offline HTML report](assets/report-preview.svg)
 
 Reset deletes periods from the SQLite database. Previously generated HTML
 reports are intentionally kept. The official uninstaller removes the local app
