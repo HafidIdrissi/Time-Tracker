@@ -362,13 +362,19 @@ class TimeTrackerApp:
             selectmode="browse",
         )
         headings = {
-            "start": "Start",
+            "start": "Started",
             "application": "Application",
             "title": "Window",
             "duration": "Duration",
             "state": "State",
         }
-        widths = {"start": 85, "application": 130, "title": 470, "duration": 90, "state": 75}
+        widths = {
+            "start": 150,
+            "application": 130,
+            "title": 405,
+            "duration": 90,
+            "state": 75,
+        }
         for column in columns:
             self.recent_tree.heading(column, text=headings[column])
             self.recent_tree.column(
@@ -502,7 +508,13 @@ class TimeTrackerApp:
         for column in range(3):
             summary.columnconfigure(column, weight=1, uniform="analysis")
         self._metric_card(summary, 0, "ACTIVE SCREEN TIME", self.analysis_total_text)
-        self._metric_card(summary, 1, "DAILY AVERAGE", self.analysis_average_text, padx=10)
+        self._metric_card(
+            summary,
+            1,
+            "AVERAGE PER CALENDAR DAY",
+            self.analysis_average_text,
+            padx=10,
+        )
         self._metric_card(summary, 2, "LONGEST SESSION", self.analysis_longest_text, padx=10)
 
         chart_card = ttk.Frame(parent, style="Card.TFrame", padding=(18, 14))
@@ -967,7 +979,7 @@ class TimeTrackerApp:
                 "",
                 "end",
                 values=(
-                    period.started_at.astimezone().strftime("%H:%M:%S"),
+                    period.started_at.astimezone().strftime("%Y-%m-%d %H:%M:%S"),
                     "Idle" if period.is_idle else period.application,
                     (
                         "No keyboard or mouse activity"
