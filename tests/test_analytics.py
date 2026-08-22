@@ -36,6 +36,55 @@ class AnalyticsTests(unittest.TestCase):
         )
         self.assertIsNone(browser_tab_title("Code.exe", "Project"))
 
+    def test_browser_title_hyphen_en_dash_em_dash_suffixes(self) -> None:
+        """Cover hyphen, en dash, and em dash suffixes for each supported browser."""
+        cases = [
+            ("chrome.exe", "Inbox - Google Chrome", "Inbox"),
+            ("chrome.exe", "Inbox – Google Chrome", "Inbox"),
+            ("chrome.exe", "Inbox — Google Chrome", "Inbox"),
+            ("firefox.exe", "Docs - Mozilla Firefox", "Docs"),
+            ("firefox.exe", "Docs – Mozilla Firefox", "Docs"),
+            ("firefox.exe", "Docs — Mozilla Firefox", "Docs"),
+            ("msedge.exe", "News - Microsoft Edge", "News"),
+            ("msedge.exe", "News – Microsoft Edge", "News"),
+            ("msedge.exe", "News — Microsoft Edge", "News"),
+            ("brave.exe", "Search - Brave", "Search"),
+            ("brave.exe", "Search – Brave", "Search"),
+            ("brave.exe", "Search — Brave", "Search"),
+            ("opera.exe", "Mail - Opera", "Mail"),
+            ("opera.exe", "Mail – Opera", "Mail"),
+            ("opera.exe", "Mail — Opera", "Mail"),
+            ("opera_gx.exe", "Stream - Opera", "Stream"),
+            ("opera_gx.exe", "Stream – Opera", "Stream"),
+            ("opera_gx.exe", "Stream — Opera", "Stream"),
+            ("vivaldi.exe", "Notes - Vivaldi", "Notes"),
+            ("vivaldi.exe", "Notes – Vivaldi", "Notes"),
+            ("vivaldi.exe", "Notes — Vivaldi", "Notes"),
+        ]
+        for application, window_title, expected in cases:
+            with self.subTest(application=application, window_title=window_title):
+                self.assertEqual(browser_tab_title(application, window_title), expected)
+
+    def test_browser_title_case_insensitive_executable(self) -> None:
+        self.assertEqual(
+            browser_tab_title("Chrome.EXE", "Gmail - Google Chrome"),
+            "Gmail",
+        )
+        self.assertEqual(
+            browser_tab_title("MsEdge.Exe", "Work – Microsoft Edge"),
+            "Work",
+        )
+
+    def test_browser_title_empty_tab_is_untitled(self) -> None:
+        self.assertEqual(
+            browser_tab_title("firefox.exe", "   "),
+            "(Untitled tab)",
+        )
+        self.assertEqual(
+            browser_tab_title("chrome.exe", ""),
+            "(Untitled tab)",
+        )
+
     def test_usage_is_grouped_by_category_application_and_tab(self) -> None:
         start = datetime(2026, 7, 20, 9, 0, tzinfo=timezone.utc).astimezone()
         periods = [
