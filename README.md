@@ -40,11 +40,38 @@ account or operating a server.
 
 1. Open the [latest release](https://github.com/HafidIdrissi/Time-Tracker/releases/latest).
 2. Download the Windows installer and `SHA256SUMS.txt`.
-3. Optionally verify the checksum.
+3. Optionally [verify the installer checksum](#verify-the-windows-installer-checksum).
 4. Run the installer and open **Local Time Tracker** from the Start menu.
 
 The application starts tracking automatically. Switch between a few
 applications, then open **Usage analysis** to see the results.
+
+### Verify the Windows installer checksum
+
+Before you run the installer, you can confirm the download was not corrupted or
+tampered with by comparing its SHA-256 hash to the published `SHA256SUMS.txt`
+file from the same release.
+
+In PowerShell, from the folder that contains both files:
+
+```powershell
+# Example file name pattern for the latest release (replace <version> with the
+# version shown on the Releases page, e.g. 1.1.0):
+#   LocalTimeTracker-Setup-<version>-x64.exe
+#   SHA256SUMS.txt
+
+Get-FileHash .\LocalTimeTracker-Setup-<version>-x64.exe -Algorithm SHA256
+Get-Content .\SHA256SUMS.txt
+```
+
+- If the hash printed by `Get-FileHash` matches the hash listed for that installer
+  in `SHA256SUMS.txt`, the file matches the published release artifact.
+- If the hashes differ, do not run the installer. Re-download both files from the
+  [latest release](https://github.com/HafidIdrissi/Time-Tracker/releases/latest)
+  and verify again.
+
+Verification is optional, but recommended when you want extra confidence
+in the binary you are about to install.
 
 > [!NOTE]
 > The current installer may be unsigned. Windows SmartScreen can therefore show
