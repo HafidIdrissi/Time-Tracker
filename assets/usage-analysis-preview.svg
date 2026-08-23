@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="850" viewBox="0 0 1060 850" role="img" aria-labelledby="title desc">
+  <title id="title">Local Time Tracker usage analysis</title>
+  <desc id="desc">Usage analysis view with today summary, hourly chart, and category, application, and browser tab rankings from synthetic demonstration data.</desc>
+  <defs>
+    <filter id="shadow" x="-2%" y="-2%" width="104%" height="108%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#0f172a" flood-opacity=".06"/>
+    </filter>
+  </defs>
+  <rect width="1060" height="850" fill="#f1f5f9"/>
+  <g font-family="Segoe UI, Arial, sans-serif" fill="#162033">
+  <!-- header -->
+  <text x="26" y="48" font-size="24" font-weight="600">Local Time Tracker</text>
+  <text x="26" y="68" font-size="10" fill="#64748b">Private, local activity tracking on this computer</text>
+  <rect x="920" y="24" width="114" height="30" rx="4" fill="#dcfce7"/>
+  <text x="977" y="44" text-anchor="middle" font-size="10" font-weight="600" fill="#166534">Running</text>
+  <!-- controls -->
+  <rect x="26" y="88" width="118" height="34" rx="4" fill="#c7d2fe" opacity=".5"/>
+  <text x="85" y="109" text-anchor="middle" font-size="10" font-weight="600" fill="#94a3b8">Start tracking</text>
+  <rect x="154" y="88" width="58" height="34" rx="4" fill="#fff" stroke="#cbd5e1"/>
+  <text x="183" y="109" text-anchor="middle" font-size="10">Stop</text>
+  <rect x="222" y="88" width="58" height="34" rx="4" fill="#fff" stroke="#cbd5e1"/>
+  <text x="251" y="109" text-anchor="middle" font-size="10" font-weight="600" fill="#dc2626">Reset</text>
+  <text x="820" y="100" font-size="10" fill="#64748b">Sample every</text>
+  <text x="900" y="100" font-size="10" fill="#64748b">Idle after</text>
+  <rect x="820" y="106" width="36" height="22" rx="2" fill="#fff" stroke="#cbd5e1"/>
+  <text x="838" y="121" text-anchor="middle" font-size="10">1</text>
+  <text x="862" y="121" font-size="10" fill="#64748b">second(s)</text>
+  <rect x="940" y="106" width="36" height="22" rx="2" fill="#fff" stroke="#cbd5e1"/>
+  <text x="958" y="121" text-anchor="middle" font-size="10">3</text>
+  <text x="982" y="121" font-size="10" fill="#64748b">minute(s)</text>
+  <text x="26" y="148" font-size="10" fill="#64748b">Tracking active &#183; sampling every 1 second(s)</text>
+  <!-- tabs -->
+  <rect x="26" y="162" width="1008" height="32" fill="#e2e8f0" rx="4"/>
+  <text x="82" y="183" text-anchor="middle" font-size="10" fill="#64748b">Dashboard</text>
+  <rect x="148" y="164" width="128" height="28" fill="#fff" rx="3"/>
+  <text x="212" y="183" text-anchor="middle" font-size="10" font-weight="600">Usage analysis</text>
+  <text x="340" y="183" text-anchor="middle" font-size="10" fill="#64748b">Reports and data</text>
+  <!-- period selector -->
+  <g filter="url(#shadow)"><rect x="26" y="210" width="1008" height="48" rx="8" fill="#fff"/></g>
+  <text x="44" y="240" font-size="9" font-weight="600" fill="#64748b">ANALYZED PERIOD</text>
+  <circle cx="200" cy="236" r="6" fill="#4f46e5"/><text x="214" y="240" font-size="10" font-weight="600">Today</text>
+  <circle cx="290" cy="236" r="6" fill="#fff" stroke="#cbd5e1"/><text x="304" y="240" font-size="10" fill="#64748b">Last 7 days</text>
+  <text x="1000" y="240" text-anchor="end" font-size="10" fill="#64748b">Today &#183; 2026-07-20</text>
+  <!-- summary metrics -->
+  <g filter="url(#shadow)"><rect x="26" y="272" width="326" height="88" rx="8" fill="#fff"/></g>
+  <text x="44" y="296" font-size="9" font-weight="600" fill="#64748b">ACTIVE SCREEN TIME</text>
+  <text x="44" y="332" font-size="20" font-weight="600">4 h 18 min</text>
+  <g filter="url(#shadow)"><rect x="362" y="272" width="326" height="88" rx="8" fill="#fff"/></g>
+  <text x="380" y="296" font-size="9" font-weight="600" fill="#64748b">AVERAGE PER CALENDAR DAY</text>
+  <text x="380" y="332" font-size="20" font-weight="600">4 h 18 min</text>
+  <g filter="url(#shadow)"><rect x="698" y="272" width="336" height="88" rx="8" fill="#fff"/></g>
+  <text x="716" y="296" font-size="9" font-weight="600" fill="#64748b">LONGEST SESSION</text>
+  <text x="716" y="332" font-size="20" font-weight="600">1 h 06 min</text>
+  <!-- chart -->
+  <g filter="url(#shadow)"><rect x="26" y="374" width="1008" height="196" rx="8" fill="#fff"/></g>
+  <text x="44" y="398" font-size="9" font-weight="600" fill="#64748b">USAGE OVER TIME</text>
+  <text x="38" y="420" text-anchor="end" font-size="8" fill="#94a3b8">1 h</text>
+  <text x="38" y="520" text-anchor="end" font-size="8" fill="#94a3b8">0</text>
+  <line x1="48" y1="416" x2="1016" y2="416" stroke="#e2e8f0"/>
+  <line x1="48" y1="450" x2="1016" y2="450" stroke="#e2e8f0"/>
+  <line x1="48" y1="484" x2="1016" y2="484" stroke="#e2e8f0"/>
+  <line x1="48" y1="518" x2="1016" y2="518" stroke="#e2e8f0"/>
+  <!-- hourly stacked bars (synthetic) -->
+  <g>
+    <rect x="56" y="498" width="22" height="20" fill="#64748b" rx="2"/>
+    <rect x="84" y="490" width="22" height="28" fill="#4f46e5" rx="2"/>
+    <rect x="112" y="472" width="22" height="46" fill="#4f46e5" rx="2"/>
+    <rect x="140" y="460" width="22" height="58" fill="#4f46e5" rx="2"/><rect x="140" y="452" width="22" height="8" fill="#0ea5e9" rx="2"/>
+    <rect x="168" y="448" width="22" height="70" fill="#4f46e5" rx="2"/>
+    <rect x="196" y="430" width="22" height="88" fill="#4f46e5" rx="2"/><rect x="196" y="422" width="22" height="8" fill="#f59e0b" rx="2"/>
+    <rect x="224" y="418" width="22" height="100" fill="#4f46e5" rx="2"/>
+    <rect x="252" y="424" width="22" height="94" fill="#4f46e5" rx="2"/><rect x="252" y="416" width="22" height="8" fill="#0ea5e9" rx="2"/>
+    <rect x="280" y="438" width="22" height="80" fill="#4f46e5" rx="2"/>
+    <rect x="308" y="456" width="22" height="62" fill="#4f46e5" rx="2"/><rect x="308" y="448" width="22" height="8" fill="#f59e0b" rx="2"/>
+    <rect x="336" y="468" width="22" height="50" fill="#4f46e5" rx="2"/>
+    <rect x="364" y="478" width="22" height="40" fill="#0ea5e9" rx="2"/>
+    <rect x="392" y="486" width="22" height="32" fill="#4f46e5" rx="2"/>
+    <rect x="420" y="492" width="22" height="26" fill="#64748b" rx="2"/>
+    <rect x="448" y="488" width="22" height="30" fill="#4f46e5" rx="2"/>
+    <rect x="476" y="480" width="22" height="38" fill="#4f46e5" rx="2"/>
+    <rect x="504" y="470" width="22" height="48" fill="#4f46e5" rx="2"/><rect x="504" y="462" width="22" height="8" fill="#0ea5e9" rx="2"/>
+    <rect x="532" y="458" width="22" height="60" fill="#4f46e5" rx="2"/>
+    <rect x="560" y="446" width="22" height="72" fill="#4f46e5" rx="2"/>
+    <rect x="588" y="438" width="22" height="80" fill="#4f46e5" rx="2"/><rect x="588" y="430" width="22" height="8" fill="#f59e0b" rx="2"/>
+    <rect x="616" y="444" width="22" height="74" fill="#4f46e5" rx="2"/>
+    <rect x="644" y="456" width="22" height="62" fill="#4f46e5" rx="2"/>
+    <rect x="672" y="468" width="22" height="50" fill="#0ea5e9" rx="2"/>
+    <rect x="700" y="478" width="22" height="40" fill="#4f46e5" rx="2"/>
+    <rect x="728" y="486" width="22" height="32" fill="#64748b" rx="2"/>
+    <rect x="756" y="492" width="22" height="26" fill="#4f46e5" rx="2"/>
+    <rect x="784" y="496" width="22" height="22" fill="#64748b" rx="2"/>
+    <rect x="812" y="500" width="22" height="18" fill="#64748b" rx="2"/>
+    <rect x="840" y="504" width="22" height="14" fill="#64748b" rx="2"/>
+    <rect x="868" y="506" width="22" height="12" fill="#64748b" rx="2"/>
+    <rect x="896" y="508" width="22" height="10" fill="#64748b" rx="2"/>
+    <rect x="924" y="510" width="22" height="8" fill="#64748b" rx="2"/>
+    <rect x="952" y="512" width="22" height="6" fill="#64748b" rx="2"/>
+    <rect x="980" y="514" width="22" height="4" fill="#64748b" rx="2"/>
+  </g>
+  <g font-size="8" fill="#64748b">
+    <text x="67" y="548" text-anchor="middle">00</text>
+    <text x="251" y="548" text-anchor="middle">06</text>
+    <text x="435" y="548" text-anchor="middle">12</text>
+    <text x="619" y="548" text-anchor="middle">18</text>
+    <text x="991" y="548" text-anchor="middle">23</text>
+  </g>
+  <!-- rankings -->
+  <g filter="url(#shadow)"><rect x="26" y="584" width="240" height="180" rx="8" fill="#fff"/></g>
+  <text x="40" y="608" font-size="9" font-weight="600" fill="#64748b">CATEGORIES</text>
+  <rect x="40" y="618" width="212" height="24" fill="#f8fafc"/>
+  <text x="48" y="634" font-size="9" font-weight="600">Type</text>
+  <text x="148" y="634" font-size="9" font-weight="600">Duration</text>
+  <text x="210" y="634" font-size="9" font-weight="600">%</text>
+  <g font-size="9">
+    <text x="48" y="658">Work</text><text x="148" y="658">2 h 45 min</text><text x="220" y="658" text-anchor="end">64</text>
+    <text x="48" y="682">Social Media</text><text x="148" y="682">48 min</text><text x="220" y="682" text-anchor="end">19</text>
+    <text x="48" y="706">Entertainment</text><text x="148" y="706">35 min</text><text x="220" y="706" text-anchor="end">14</text>
+    <text x="48" y="730">Other</text><text x="148" y="730">10 min</text><text x="220" y="730" text-anchor="end">4</text>
+  </g>
+  <g filter="url(#shadow)"><rect x="276" y="584" width="240" height="180" rx="8" fill="#fff"/></g>
+  <text x="290" y="608" font-size="9" font-weight="600" fill="#64748b">MOST USED APPLICATIONS</text>
+  <rect x="290" y="618" width="212" height="24" fill="#f8fafc"/>
+  <text x="298" y="634" font-size="9" font-weight="600">Application</text>
+  <text x="398" y="634" font-size="9" font-weight="600">Duration</text>
+  <text x="460" y="634" font-size="9" font-weight="600">%</text>
+  <g font-size="9">
+    <text x="298" y="658">Code.exe</text><text x="398" y="658">2 h 12 min</text><text x="470" y="658" text-anchor="end">52</text>
+    <text x="298" y="682">chrome.exe</text><text x="398" y="682">1 h 02 min</text><text x="470" y="682" text-anchor="end">24</text>
+    <text x="298" y="706">msedge.exe</text><text x="398" y="706">38 min</text><text x="470" y="706" text-anchor="end">15</text>
+    <text x="298" y="730">Explorer.exe</text><text x="398" y="730">18 min</text><text x="470" y="730" text-anchor="end">7</text>
+  </g>
+  <g filter="url(#shadow)"><rect x="526" y="584" width="508" height="180" rx="8" fill="#fff"/></g>
+  <text x="540" y="608" font-size="9" font-weight="600" fill="#64748b">MOST USED BROWSER TABS</text>
+  <rect x="540" y="618" width="480" height="24" fill="#f8fafc"/>
+  <text x="548" y="634" font-size="9" font-weight="600">Tab</text>
+  <text x="698" y="634" font-size="9" font-weight="600">Browser</text>
+  <text x="848" y="634" font-size="9" font-weight="600">Duration</text>
+  <g font-size="9">
+    <text x="548" y="658">Docs</text><text x="698" y="658">chrome.exe</text><text x="848" y="658">1 h 02 min</text>
+    <text x="548" y="682">News</text><text x="698" y="682">msedge.exe</text><text x="848" y="682">38 min</text>
+    <text x="548" y="706">Inbox</text><text x="698" y="706">chrome.exe</text><text x="848" y="706">18 min</text>
+  </g>
+  <text x="26" y="832" font-size="10" fill="#64748b">Tracking continues while the app is minimized. Closing this window stops tracking. &#183; Version 1.1.0 &#183; H.I. SOLUTIONS</text>
+  </g>
+</svg>

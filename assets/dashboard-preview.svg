@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="850" viewBox="0 0 1060 850" role="img" aria-labelledby="title desc">
+  <title id="title">Local Time Tracker dashboard</title>
+  <desc id="desc">Dashboard view with live activity, today metrics, and recent activity from synthetic demonstration data.</desc>
+  <defs>
+    <filter id="shadow" x="-2%" y="-2%" width="104%" height="108%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#0f172a" flood-opacity=".06"/>
+    </filter>
+  </defs>
+  <rect width="1060" height="850" fill="#f1f5f9"/>
+  <g font-family="Segoe UI, Arial, sans-serif" fill="#162033">
+  <!-- header -->
+  <text x="26" y="48" font-size="24" font-weight="600">Local Time Tracker</text>
+  <text x="26" y="68" font-size="10" fill="#64748b">Private, local activity tracking on this computer</text>
+  <rect x="920" y="24" width="114" height="30" rx="4" fill="#dcfce7"/>
+  <text x="977" y="44" text-anchor="middle" font-size="10" font-weight="600" fill="#166534">Running</text>
+  <!-- controls -->
+  <rect x="26" y="88" width="118" height="34" rx="4" fill="#c7d2fe" opacity=".5"/>
+  <text x="85" y="109" text-anchor="middle" font-size="10" font-weight="600" fill="#94a3b8">Start tracking</text>
+  <rect x="154" y="88" width="58" height="34" rx="4" fill="#fff" stroke="#cbd5e1"/>
+  <text x="183" y="109" text-anchor="middle" font-size="10">Stop</text>
+  <rect x="222" y="88" width="58" height="34" rx="4" fill="#fff" stroke="#cbd5e1"/>
+  <text x="251" y="109" text-anchor="middle" font-size="10" font-weight="600" fill="#dc2626">Reset</text>
+  <text x="820" y="100" font-size="10" fill="#64748b">Sample every</text>
+  <text x="900" y="100" font-size="10" fill="#64748b">Idle after</text>
+  <rect x="820" y="106" width="36" height="22" rx="2" fill="#fff" stroke="#cbd5e1"/>
+  <text x="838" y="121" text-anchor="middle" font-size="10">1</text>
+  <text x="862" y="121" font-size="10" fill="#64748b">second(s)</text>
+  <rect x="940" y="106" width="36" height="22" rx="2" fill="#fff" stroke="#cbd5e1"/>
+  <text x="958" y="121" text-anchor="middle" font-size="10">3</text>
+  <text x="982" y="121" font-size="10" fill="#64748b">minute(s)</text>
+  <text x="26" y="148" font-size="10" fill="#64748b">Tracking active &#183; sampling every 1 second(s)</text>
+  <!-- tabs -->
+  <rect x="26" y="162" width="1008" height="32" fill="#e2e8f0" rx="4"/>
+  <rect x="28" y="164" width="108" height="28" fill="#fff" rx="3"/>
+  <text x="82" y="183" text-anchor="middle" font-size="10" font-weight="600">Dashboard</text>
+  <text x="200" y="183" text-anchor="middle" font-size="10" fill="#64748b">Usage analysis</text>
+  <text x="340" y="183" text-anchor="middle" font-size="10" fill="#64748b">Reports and data</text>
+  <!-- live activity card -->
+  <g filter="url(#shadow)"><rect x="26" y="210" width="1008" height="118" rx="8" fill="#fff"/></g>
+  <text x="46" y="234" font-size="9" font-weight="600" letter-spacing=".5" fill="#64748b">LIVE ACTIVITY</text>
+  <text x="46" y="262" font-size="14" font-weight="600">Code.exe</text>
+  <text x="46" y="282" font-size="10" fill="#64748b">Project - Visual Studio Code</text>
+  <text x="900" y="252" text-anchor="end" font-size="8" fill="#64748b">Current window duration</text>
+  <text x="1000" y="252" text-anchor="end" font-size="9" font-weight="600">00:18:42</text>
+  <text x="900" y="268" text-anchor="end" font-size="8" fill="#64748b">Keyboard/mouse idle</text>
+  <text x="1000" y="268" text-anchor="end" font-size="9" font-weight="600">12 s</text>
+  <text x="900" y="284" text-anchor="end" font-size="8" fill="#64748b">Last sample</text>
+  <text x="1000" y="284" text-anchor="end" font-size="9" font-weight="600">11:42:15</text>
+  <!-- metric cards -->
+  <g filter="url(#shadow)"><rect x="26" y="342" width="240" height="88" rx="8" fill="#fff"/></g>
+  <text x="44" y="366" font-size="9" font-weight="600" fill="#64748b">ACTIVE TIME TODAY</text>
+  <text x="44" y="402" font-size="20" font-weight="600">4 h 18 min</text>
+  <g filter="url(#shadow)"><rect x="276" y="342" width="240" height="88" rx="8" fill="#fff"/></g>
+  <text x="294" y="366" font-size="9" font-weight="600" fill="#64748b">IDLE TIME</text>
+  <text x="294" y="402" font-size="20" font-weight="600">32 min</text>
+  <g filter="url(#shadow)"><rect x="526" y="342" width="240" height="88" rx="8" fill="#fff"/></g>
+  <text x="544" y="366" font-size="9" font-weight="600" fill="#64748b">APPLICATIONS</text>
+  <text x="544" y="402" font-size="20" font-weight="600">5</text>
+  <g filter="url(#shadow)"><rect x="776" y="342" width="258" height="88" rx="8" fill="#fff"/></g>
+  <text x="794" y="366" font-size="9" font-weight="600" fill="#64748b">PERIODS DETECTED</text>
+  <text x="794" y="402" font-size="20" font-weight="600">18</text>
+  <!-- recent activity -->
+  <g filter="url(#shadow)"><rect x="26" y="444" width="1008" height="360" rx="8" fill="#fff"/></g>
+  <text x="44" y="468" font-size="9" font-weight="600" fill="#64748b">RECENT ACTIVITY</text>
+  <text x="960" y="468" text-anchor="end" font-size="9" font-weight="600">02:14:08</text>
+  <text x="880" y="468" text-anchor="end" font-size="9" fill="#64748b">Tracking time:</text>
+  <rect x="44" y="480" width="972" height="28" fill="#f8fafc"/>
+  <text x="52" y="498" font-size="9" font-weight="600">Started</text>
+  <text x="202" y="498" font-size="9" font-weight="600">Application</text>
+  <text x="332" y="498" font-size="9" font-weight="600">Window</text>
+  <text x="737" y="498" font-size="9" font-weight="600">Duration</text>
+  <text x="827" y="498" font-size="9" font-weight="600">State</text>
+  <g font-size="9">
+    <text x="52" y="526">09:14:22</text><text x="202" y="526">Code.exe</text><text x="332" y="526">Project - Visual Studio Code</text><text x="737" y="526">42 min</text><text x="827" y="526">Active</text>
+    <line x1="44" y1="534" x2="1016" y2="534" stroke="#f1f5f9"/>
+    <text x="52" y="554">10:02:08</text><text x="202" y="554">chrome.exe</text><text x="332" y="554">Docs - Google Chrome</text><text x="737" y="554">28 min</text><text x="827" y="554">Active</text>
+    <line x1="44" y1="562" x2="1016" y2="562" stroke="#f1f5f9"/>
+    <text x="52" y="582">10:30:45</text><text x="202" y="582">Explorer.exe</text><text x="332" y="582">Documents</text><text x="737" y="582">11 min</text><text x="827" y="582">Active</text>
+    <line x1="44" y1="590" x2="1016" y2="590" stroke="#f1f5f9"/>
+    <text x="52" y="610">10:41:52</text><text x="202" y="610">msedge.exe</text><text x="332" y="610">News - Microsoft Edge</text><text x="737" y="610">19 min</text><text x="827" y="610">Active</text>
+    <line x1="44" y1="618" x2="1016" y2="618" stroke="#f1f5f9"/>
+    <text x="52" y="638">11:01:03</text><text x="202" y="638">Notepad.exe</text><text x="332" y="638">Notes.txt</text><text x="737" y="638">6 min</text><text x="827" y="638">Active</text>
+    <line x1="44" y1="646" x2="1016" y2="646" stroke="#f1f5f9"/>
+    <text x="52" y="666" fill="#64748b">11:07:18</text><text x="202" y="666" fill="#64748b">Idle</text><text x="332" y="666" fill="#64748b">No keyboard or mouse activity</text><text x="737" y="666" fill="#64748b">4 min</text><text x="827" y="666" fill="#64748b">Idle</text>
+  </g>
+  <text x="26" y="832" font-size="10" fill="#64748b">Tracking continues while the app is minimized. Closing this window stops tracking. &#183; Version 1.1.0 &#183; H.I. SOLUTIONS</text>
+  </g>
+</svg>
