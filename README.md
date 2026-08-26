@@ -21,6 +21,15 @@ telemetry.
 Download the `LocalTimeTracker-Setup-<version>-x64.exe` installer from the
 latest release. A SHA-256 checksum is published beside every installer.
 
+## Desktop screenshots
+
+Sanitized captures from a synthetic demonstration database. No real names,
+paths, or private window titles are shown.
+
+![Local Time Tracker dashboard with live activity, today metrics, and recent activity](assets/dashboard-preview.png)
+
+![Local Time Tracker usage analysis with hourly chart, categories, applications, and browser tabs](assets/usage-analysis-preview.png)
+
 ![Local Time Tracker offline activity report](assets/report-preview.svg)
 
 ## Why Local Time Tracker?
