@@ -8,8 +8,9 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-4f46e5.svg)](LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078d4.svg)](#requirements)
 
-> **Contributors welcome!**  
-> New to open source? Browse our [good first issues](https://github.com/HafidIdrissi/Time-Tracker/contribute), comment on the issue you want to work on, and the maintainer will help clarify the scope.
+> **Contributors welcome!**
+>
+> New to open source? Browse our [good first issues](https://github.com/HafidIdrissi/Time-Tracker/contribute), read the short [claiming process](CONTRIBUTING.md#find-and-claim-an-issue), and comment on the issue you want to work on.
 
 Local Time Tracker is a free, open-source Windows application that automatically
 measures time spent in applications and browser tabs. Your activity stays in a

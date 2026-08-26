@@ -12,6 +12,31 @@ documentation changes, tests, and focused code contributions are welcome.
 - For vulnerabilities, follow [SECURITY.md](SECURITY.md) instead of opening a
   public issue.
 
+## Find and claim an issue
+
+New contributors can start from the repository's
+[contribution page](https://github.com/HafidIdrissi/Time-Tracker/contribute).
+Issues labeled `good first issue` are small, focused introductions to the
+project. Issues labeled `help wanted` may require more design or Windows
+testing.
+
+1. Choose an open, unassigned issue that matches your experience.
+2. Comment with a short implementation plan and ask to be assigned.
+3. Wait for the maintainer to confirm the scope before starting substantial
+   work, so two people do not solve the same issue.
+4. Work on one claimed issue at a time. Open a draft pull request early if you
+   want feedback on the approach.
+5. Link the pull request with `Closes #<issue-number>` and include the validation
+   you performed.
+
+If you become unavailable or blocked, leave a comment so the issue can be made
+available again. Claims with no update for seven days may be released after a
+maintainer check-in.
+
+The maintainer aims to acknowledge claim requests and review focused pull
+requests within two working days. Larger changes may take longer or require a
+design discussion first.
+
 ## Development setup
 
 Local Time Tracker targets 64-bit Windows 10 and Windows 11 with Python 3.11 or
