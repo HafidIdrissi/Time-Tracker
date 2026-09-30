@@ -75,7 +75,35 @@ class AnalyticsTests(unittest.TestCase):
             "Work",
         )
 
-    def test_browser_title_empty_tab_is_untitled(self) -> None:
+    def test_browser_title_empty_or_suffix_only_is_untitled(self) -> None:
+        self.assertEqual(
+            browser_tab_title("chrome.exe", " - Google Chrome"),
+            "(Untitled tab)",
+        )
+        self.assertEqual(
+            browser_tab_title("chrome.exe", "- Google Chrome"),
+            "(Untitled tab)",
+        )
+        self.assertEqual(
+            browser_tab_title("firefox.exe", " – Mozilla Firefox"),
+            "(Untitled tab)",
+        )
+        self.assertEqual(
+            browser_tab_title("msedge.exe", " — Microsoft Edge"),
+            "(Untitled tab)",
+        )
+        self.assertEqual(
+            browser_tab_title("brave.exe", " - Brave"),
+            "(Untitled tab)",
+        )
+        self.assertEqual(
+            browser_tab_title("opera.exe", " - Opera"),
+            "(Untitled tab)",
+        )
+        self.assertEqual(
+            browser_tab_title("vivaldi.exe", " - Vivaldi"),
+            "(Untitled tab)",
+        )
         self.assertEqual(
             browser_tab_title("firefox.exe", "   "),
             "(Untitled tab)",

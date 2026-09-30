@@ -68,11 +68,16 @@ def browser_tab_title(application: str, window_title: str) -> str | None:
 
     if application.casefold() not in BROWSER_APPLICATIONS:
         return None
-    title = window_title.strip()
+    title = window_title.rstrip()
     for suffix in BROWSER_SUFFIXES:
         if title.casefold().endswith(suffix.casefold()):
             title = title[: -len(suffix)].strip()
             break
+        if title.strip().casefold() == suffix.strip().casefold():
+            title = ""
+            break
+    else:
+        title = title.strip()
     return title or "(Untitled tab)"
 
 
