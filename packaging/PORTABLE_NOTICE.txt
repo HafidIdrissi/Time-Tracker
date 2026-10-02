@@ -1,0 +1,37 @@
+LOCAL TIME TRACKER {{VERSION}}
+PORTABLE VERSION NOTICE
+
+This package runs Local Time Tracker in portable mode.
+
+PORTABLE DATA LOCATION
+
+Activity data, configuration, and generated reports are stored in the
+same directory as the portable application:
+
+    data\activity.db
+    config.json
+    reports\
+
+The portable version does not use %LOCALAPPDATA%\LocalTimeTracker for its
+application data.
+
+BACKUP AND UPDATES
+
+To back up the portable version, copy the complete portable application
+folder, including the data, configuration, and reports directories.
+
+To update the portable version, replace the application files while
+preserving your data, configuration, and reports.
+
+IMPORTANT
+
+Do not run the installed version and the portable version at the same time.
+They maintain separate application data and may record activity
+independently.
+
+The portable package does not create an installation or uninstall entry.
+To remove it, close the application and delete the portable application
+folder.
+
+See LICENSE, PRIVACY.md, CHANGELOG.md, and LEGAL.md for additional
+information.

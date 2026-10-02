@@ -98,14 +98,27 @@ if (-not (Test-Path -LiteralPath $installerPath)) {
 
 Invoke-CodeSigning -FilePath $installerPath
 
+$portableZipPath = Join-Path $projectDirectory "release\LocalTimeTracker-$Version-portable-x64.zip"
+if (-not (Test-Path -LiteralPath $portableZipPath)) {
+    throw "Expected portable archive not found: $portableZipPath"
+}
+
 if (-not $signingEnabled) {
     Write-Warning "Unsigned release: suitable for testing and GitHub, but not yet ready for Softonic."
 }
 
-$checksum = Get-FileHash -Algorithm SHA256 -LiteralPath $installerPath
-$checksumLine = "$($checksum.Hash.ToLowerInvariant()) *$([System.IO.Path]::GetFileName($installerPath))"
-$checksumPath = Join-Path $projectDirectory "release\SHA256SUMS.txt"
-Set-Content -LiteralPath $checksumPath -Value $checksumLine -Encoding ascii
+$installerChecksum = Get-FileHash -Algorithm SHA256 -LiteralPath $installerPath
+$portableChecksum = Get-FileHash -Algorithm SHA256 -LiteralPath $portableZipPath
 
-Write-Host "Release ready: $installerPath"
-Write-Host "SHA-256 : $($checksum.Hash.ToLowerInvariant())"
+$checksumPath = Join-Path $projectDirectory "release\SHA256SUMS.txt"
+$checksumLines = @(
+    "$($installerChecksum.Hash.ToLowerInvariant()) *$([System.IO.Path]::GetFileName($installerPath))"
+    "$($portableChecksum.Hash.ToLowerInvariant()) *$([System.IO.Path]::GetFileName($portableZipPath))"
+)
+
+Set-Content -LiteralPath $checksumPath -Value $checksumLines -Encoding ascii
+
+Write-Host "Release ready:"
+Write-Host "  Installer : $installerPath"
+Write-Host "  Portable  : $portableZipPath"
+Write-Host "  Checksums : $checksumPath"

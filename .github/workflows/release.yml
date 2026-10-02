@@ -45,19 +45,30 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = $env:GITHUB_REF_NAME
-          $installer = Get-ChildItem .\release\LocalTimeTracker-Setup-*-x64.exe |
-            Select-Object -First 1
+          $version = $tag.TrimStart("v")
+
+          $installer = Join-Path $PWD "release\LocalTimeTracker-Setup-$version-x64.exe"
+          $portable = Join-Path $PWD "release\LocalTimeTracker-$version-portable-x64.zip"
+          $checksums = Join-Path $PWD "release\SHA256SUMS.txt"
+
+          foreach ($artifact in @($installer, $portable, $checksums)) {
+            if (-not (Test-Path -LiteralPath $artifact)) {
+              throw "Expected release artifact not found: $artifact"
+            }
+          }
 
           gh release view $tag --json tagName *> $null
           if ($LASTEXITCODE -eq 0) {
             gh release upload $tag `
-              $installer.FullName `
-              .\release\SHA256SUMS.txt `
+              $installer `
+              $portable `
+              $checksums `
               --clobber
           } else {
             gh release create $tag `
-              $installer.FullName `
-              .\release\SHA256SUMS.txt `
+              $installer `
+              $portable `
+              $checksums `
               --verify-tag `
               --generate-notes `
               --title "Local Time Tracker $tag"

@@ -45,11 +45,26 @@ def bundled_resource(name: str) -> Path:
     return application_directory() / name
 
 
+PORTABLE_MARKER = "portable.mode"
+
+
+def is_portable_mode() -> bool:
+    """Return whether the packaged application explicitly requests portable mode."""
+
+    if not getattr(sys, "frozen", False):
+        return False
+    return (application_directory() / PORTABLE_MARKER).is_file()
+
+
 def storage_directory() -> Path:
-    """Choose a writable data folder that survives rebuilding the executable."""
+    """Choose the writable data folder for the current application mode."""
 
     executable_directory = application_directory()
+
     if not getattr(sys, "frozen", False):
+        return executable_directory
+
+    if is_portable_mode():
         return executable_directory
 
     project_candidate = executable_directory.parent.parent

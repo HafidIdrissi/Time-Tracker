@@ -180,6 +180,35 @@ Installed application data is stored under:
 When run directly from the repository, the equivalent folders are inside the
 project directory.
 
+### Portable Windows build
+
+Each Windows release also provides a portable ZIP named
+`LocalTimeTracker-<version>-portable-x64.zip`.
+
+To use the portable build, download the ZIP from the latest release, extract
+it to a folder, and run `LocalTimeTracker.exe`.
+
+Portable mode keeps application data inside the extracted folder:
+
+<portable-folder>\
+├── data\activity.db
+├── reports\
+├── LocalTimeTracker.exe
+├── portable.mode
+└── ...
+
+The portable build does not use `%LOCALAPPDATA%\LocalTimeTracker` for its
+application data and does not create a Windows uninstall entry.
+
+To back up a portable installation, copy the entire extracted folder,
+including the `data` and `reports` directories. When moving to a newer
+portable release, preserve the existing `data` directory if you want to keep
+your recorded activity.
+
+WARNING: Do not run the installed version and the portable version at the same
+time. Both versions can record activity simultaneously and may produce
+overlapping tracking data.
+
 Window and browser-tab titles can contain sensitive information such as
 document names, searches, email subjects, account names, or private website
 titles. Do not publish `activity.db` or personal HTML reports. The database is
