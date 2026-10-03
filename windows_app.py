@@ -110,6 +110,7 @@ class TimeTrackerApp:
         self.running_idle_threshold = 180.0
         self.running_poll_interval = 1.0
         self.analysis_data: UsageAnalytics | None = None
+        self.analysis_error = False
         self.current_signature: tuple[str, str] | None = None
         self.current_since: datetime | None = None
         self.tracking_started_at: datetime | None = None
@@ -785,6 +786,20 @@ class TimeTrackerApp:
         if not self.closing:
             self.root.after(2000, self._refresh_summary)
 
+    def _show_analysis_error(self) -> None:
+        """Replace visible analysis with an explicit refresh failure."""
+
+        self.analysis_error = True
+        self.analysis_data = None
+        self.analysis_period_text.set("Analysis unavailable")
+        self.analysis_total_text.set("—")
+        self.analysis_average_text.set("—")
+        self.analysis_longest_text.set("—")
+        self._replace_tree_rows(self.category_tree, [], "Analysis unavailable")
+        self._replace_tree_rows(self.analysis_app_tree, [], "Analysis unavailable")
+        self._replace_tree_rows(self.analysis_tab_tree, [], "Analysis unavailable")
+        self._draw_usage_chart()
+
     def _refresh_analysis(self, schedule: bool = True) -> None:
         try:
             end_day = date.today()
@@ -809,6 +824,7 @@ class TimeTrackerApp:
                     range_end,
                 )
             analytics = analyze_usage(periods, start_day, end_day)
+            self.analysis_error = False
             self.analysis_data = analytics
             self.analysis_total_text.set(format_duration(analytics.active_seconds))
             self.analysis_average_text.set(format_duration(analytics.average_daily_seconds))
@@ -818,7 +834,7 @@ class TimeTrackerApp:
             self._populate_analysis_rankings(analytics)
             self._draw_usage_chart()
         except (CategoryConfigError, OSError, sqlite3.Error, ValueError):
-            self.analysis_data = None
+            self._show_analysis_error()
         if schedule and not self.closing:
             self.root.after(5000, self._refresh_analysis)
 
@@ -891,12 +907,16 @@ class TimeTrackerApp:
         canvas = self.usage_canvas
         canvas.delete("all")
         analytics = self.analysis_data
-        if analytics is None or not analytics.buckets:
+        if self.analysis_error or analytics is None or not analytics.buckets:
             canvas.create_text(
                 12,
                 80,
                 anchor="w",
-                text="No activity during this period",
+                text=(
+                    "Usage analysis could not be refreshed."
+                    if self.analysis_error
+                    else "No activity during this period"
+                ),
                 fill="#94a3b8",
                 font=("Segoe UI", 10),
             )
