@@ -214,6 +214,15 @@ that file does not exist, the application uses `config.example.json`.
 ```
 
 The first matching category wins, so place specific rules before broad rules.
+Preview one synthetic application and title without tracking or a database:
+
+```powershell
+python preview_category.py --config config.example.json --application chrome.exe --title "Fictional inbox gmail"
+python preview_category.py --config config.example.json --application notes.exe --title "No matching keyword"
+```
+
+Invalid configuration prints a short error and returns a non-zero status. The
+command does not record the title anywhere except that direct output.
 Changes are reflected the next time analysis or a report loads the
 configuration.
 
