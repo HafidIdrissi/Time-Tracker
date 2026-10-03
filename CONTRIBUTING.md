@@ -40,7 +40,12 @@ design discussion first.
 ## Development setup
 
 Local Time Tracker targets 64-bit Windows 10 and Windows 11 with Python 3.11 or
-later.
+later. The desktop application and live tracker run on Windows only.
+
+GitHub Actions runs the core test suite on Windows with Python 3.11 and 3.13,
+and on Ubuntu with Python 3.12. The Ubuntu job does not sample a desktop or
+use Win32 APIs. It is the non-Windows path for storage, categories, analytics,
+and report tests.
 
 ```powershell
 git clone https://github.com/HafidIdrissi/Time-Tracker.git

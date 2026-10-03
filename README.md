@@ -299,7 +299,10 @@ Build a tested installer:
 ```
 
 This produces the installer and checksum under `release\`. Pull requests and
-changes to `main` run `.github/workflows/tests.yml`. Pushing a semantic version
+changes to `main` run `.github/workflows/tests.yml` on Windows Python 3.11,
+Windows Python 3.13, and Ubuntu Python 3.12. The Ubuntu job runs the existing
+core tests only. Sampling, the desktop window, and the installed tracker remain
+Windows-only. Pushing a semantic version
 tag such as `v1.1.0` starts `.github/workflows/release.yml`, which tests the
 project, builds the installer, and publishes the GitHub release.
 
