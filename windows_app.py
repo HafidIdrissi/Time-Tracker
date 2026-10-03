@@ -18,6 +18,7 @@ from timetracker.analytics import UsageAnalytics, analyze_usage
 from timetracker.categories import CategoryConfigError, load_categorizer
 from timetracker.database import ActivityDatabase
 from timetracker.models import ActivityPeriod, ActivitySnapshot
+from timetracker.preferences import load_tracking_preferences, save_tracking_preferences
 from timetracker.reporting import (
     collect_periods,
     format_duration,
@@ -126,8 +127,11 @@ class TimeTrackerApp:
         self.tracking_duration_text = tk.StringVar(value="00:00:00")
         self.last_measure_text = tk.StringVar(value="—")
         self.live_idle_text = tk.StringVar(value="0 s")
-        self.poll_interval_text = tk.StringVar(value="1")
-        self.idle_threshold_text = tk.StringVar(value="3")
+        sample_seconds, idle_minutes = load_tracking_preferences(
+            APP_DIRECTORY / "preferences.json"
+        )
+        self.poll_interval_text = tk.StringVar(value=sample_seconds)
+        self.idle_threshold_text = tk.StringVar(value=idle_minutes)
         self.analysis_range = tk.StringVar(value="today")
         self.analysis_period_text = tk.StringVar(value="Today")
         self.analysis_total_text = tk.StringVar(value="0 min")
@@ -280,6 +284,12 @@ class TimeTrackerApp:
             state="readonly",
         )
         self.idle_box.grid(row=1, column=2, sticky="w", pady=(3, 0))
+        self.interval_box.bind(
+            "<<ComboboxSelected>>", self._persist_tracking_preferences, add="+"
+        )
+        self.idle_box.bind(
+            "<<ComboboxSelected>>", self._persist_tracking_preferences, add="+"
+        )
         ttk.Label(settings, text="minute(s)", style="Subtitle.TLabel").grid(
             row=1, column=3, padx=(5, 0), pady=(3, 0)
         )
@@ -630,6 +640,19 @@ class TimeTrackerApp:
             self.stop_button.configure(state="disabled")
             self.interval_box.configure(state="readonly")
             self.idle_box.configure(state="readonly")
+
+    def _persist_tracking_preferences(self, _event: object = None) -> None:
+        try:
+            save_tracking_preferences(
+                APP_DIRECTORY / "preferences.json",
+                self.poll_interval_text.get(),
+                self.idle_threshold_text.get(),
+            )
+        except (OSError, ValueError):
+            messagebox.showwarning(
+                "Preferences not saved",
+                "Tracking will continue, but these options may not be remembered next time.",
+            )
 
     def start_tracking(self) -> None:
         if self.tracker_thread and self.tracker_thread.is_alive():

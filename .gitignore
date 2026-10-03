@@ -17,6 +17,7 @@ data/
 # Generated reports and personal configuration
 reports/
 config.json
+preferences.json
 
 # IDE and operating system files
 .idea/

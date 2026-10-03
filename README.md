@@ -145,6 +145,10 @@ The application provides three views.
 - active time, idle time, application count, and period count for today;
 - recent activity timeline with exact durations and states.
 
+Sample interval and idle threshold are remembered in `preferences.json` in the
+application data directory. Missing or invalid values fall back to one second
+and three minutes. If the preference file cannot be saved, tracking still runs.
+
 ### Usage analysis
 
 - Today and Last 7 days views;
