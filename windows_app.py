@@ -1094,8 +1094,8 @@ class TimeTrackerApp:
             self.messages.put(("report_error", str(exc)))
 
     def open_reports_directory(self) -> None:
-        REPORTS_DIRECTORY.mkdir(parents=True, exist_ok=True)
         try:
+            REPORTS_DIRECTORY.mkdir(parents=True, exist_ok=True)
             os.startfile(str(REPORTS_DIRECTORY))
         except OSError as exc:
             messagebox.showerror("Unable to open", str(exc))
