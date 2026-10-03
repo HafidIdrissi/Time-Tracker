@@ -7,6 +7,7 @@ import argparse
 import logging
 from pathlib import Path
 
+from timetracker import __version__
 from timetracker.database import ActivityDatabase
 from timetracker.tracker import ActivityTracker
 from timetracker.windows import WindowsActivityProvider
@@ -33,6 +34,11 @@ def build_parser() -> argparse.ArgumentParser:
         type=float,
         default=180.0,
         help="Idle threshold in seconds (default: 180)",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
     )
     return parser
 
