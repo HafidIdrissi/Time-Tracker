@@ -23,7 +23,9 @@ searches, email subjects, user names, or private web page titles.
 ## Purpose
 
 The recorded data is used only to display the dashboard, calculate usage
-statistics, and generate reports requested by the user.
+statistics, generate reports requested by the user, and write a CSV or JSON
+export when the user explicitly chooses a destination file. Exports are not
+uploaded.
 
 ## Storage
 

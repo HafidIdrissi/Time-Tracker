@@ -11,12 +11,13 @@ import threading
 from datetime import date, datetime, timedelta
 from pathlib import Path
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import filedialog, messagebox, ttk
 
 from timetracker import __version__
 from timetracker.analytics import UsageAnalytics, analyze_usage
 from timetracker.categories import CategoryConfigError, load_categorizer
 from timetracker.database import ActivityDatabase
+from timetracker.exporting import export_activity
 from timetracker.models import ActivityPeriod, ActivitySnapshot
 from timetracker.reporting import (
     collect_periods,
@@ -439,6 +440,20 @@ class TimeTrackerApp:
             foreground="#64748b",
             wraplength=900,
         ).pack(anchor="w", pady=(0, 12))
+        export_actions = ttk.Frame(data_card, style="Card.TFrame")
+        export_actions.pack(anchor="w", pady=(0, 12))
+        ttk.Button(
+            export_actions,
+            text="Export CSV",
+            command=lambda: self.export_activity_file("csv"),
+            style="App.TButton",
+        ).pack(side="left")
+        ttk.Button(
+            export_actions,
+            text="Export JSON",
+            command=lambda: self.export_activity_file("json"),
+            style="App.TButton",
+        ).pack(side="left", padx=(10, 0))
         self.reset_data_button = ttk.Button(
             data_card,
             text="Reset all activity history",
@@ -990,6 +1005,28 @@ class TimeTrackerApp:
                     "Idle" if period.is_idle else "Active",
                 ),
             )
+
+    def export_activity_file(self, file_format: str) -> None:
+        extension = ".csv" if file_format == "csv" else ".json"
+        destination = filedialog.asksaveasfilename(
+            title=f"Export activity as {file_format.upper()}",
+            defaultextension=extension,
+            filetypes=[(file_format.upper(), f"*{extension}")],
+        )
+        if not destination:
+            return
+        try:
+            export_activity(DATABASE_PATH, destination, file_format)
+        except (OSError, sqlite3.Error, ValueError):
+            messagebox.showerror(
+                "Unable to export",
+                "The activity export could not be written. The database was not changed.",
+            )
+            return
+        messagebox.showinfo(
+            "Export created",
+            "Activity was written to the selected file. Window titles in that file can be sensitive.",
+        )
 
     def reset_activity(self) -> None:
         confirmed = messagebox.askyesno(

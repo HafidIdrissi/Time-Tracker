@@ -133,6 +133,19 @@ class ActivityDatabase:
             is_idle=bool(row["is_idle"]),
         )
 
+    def all_periods(self) -> list[ActivityPeriod]:
+        """Return every stored period, oldest first, without clipping."""
+
+        rows = self.connection.execute(
+            """
+            SELECT id, application, window_title, started_at, ended_at,
+                   duration_seconds, is_idle
+            FROM activity_periods
+            ORDER BY started_at ASC, id ASC
+            """
+        ).fetchall()
+        return [self._period_from_row(row) for row in rows]
+
     def recent_periods(self, limit: int = 12) -> list[ActivityPeriod]:
         """Return the most recently observed periods, newest first."""
 

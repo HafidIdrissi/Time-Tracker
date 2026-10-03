@@ -161,7 +161,13 @@ separate visits to the same tab are added together.
 
 - generate an offline HTML report for a selected date;
 - open the local reports folder;
+- export recorded activity as CSV or JSON;
 - reset all recorded activity from the interface.
+
+CSV and JSON exports contain `application`, `window_title`, `started_at`,
+`ended_at`, `duration_seconds`, and `is_idle`. Timestamps include a timezone
+offset. Titles in the export can be sensitive, and the export is written only
+to the file you choose.
 
 Reset deletes periods from the SQLite database. Previously generated HTML
 reports are intentionally kept. The official uninstaller removes the local app
