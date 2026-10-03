@@ -143,6 +143,62 @@ class AnalyticsTests(unittest.TestCase):
         self.assertEqual(analytics.average_daily_seconds, 10 * 60)
         self.assertEqual(len(analytics.buckets), 7)
 
+    def _session(self, periods: list[ReportPeriod]) -> float:
+        if not periods:
+            return analyze_usage([], date(2026, 7, 20), date(2026, 7, 20)).longest_session_seconds
+        start_day = min(period.started_at for period in periods).date()
+        end_day = max(period.ended_at for period in periods).date()
+        return analyze_usage(periods, start_day, end_day).longest_session_seconds
+
+    def test_longest_session_boundaries(self) -> None:
+        origin = datetime(2026, 7, 20, 9, 0, tzinfo=timezone.utc)
+        active = self._period(origin, 10, "Code.exe", "Editor", "Work", "#111111")
+        self.assertEqual(self._session([]), 0)
+        self.assertEqual(self._session([active]), 10 * 60)
+
+        continued = self._period(
+            origin + timedelta(minutes=10, seconds=30),
+            5,
+            "Code.exe",
+            "Editor",
+            "Work",
+            "#111111",
+        )
+        self.assertEqual(self._session([active, continued]), 15 * 60 + 30)
+
+        split = self._period(
+            origin + timedelta(minutes=10, seconds=31),
+            5,
+            "Code.exe",
+            "Editor",
+            "Work",
+            "#111111",
+        )
+        self.assertEqual(self._session([active, split]), 10 * 60)
+
+        idle = self._period(
+            origin + timedelta(minutes=10),
+            1,
+            "Idle",
+            "Break",
+            "Idle",
+            "#999999",
+            idle=True,
+        )
+        after_idle = self._period(
+            origin + timedelta(minutes=11),
+            4,
+            "Code.exe",
+            "Editor",
+            "Work",
+            "#111111",
+        )
+        self.assertEqual(self._session([active, idle, after_idle]), 10 * 60)
+
+        overlap = self._period(origin + timedelta(minutes=5), 10, "Code.exe", "Editor", "Work", "#111111")
+        self.assertEqual(self._session([active, overlap]), 15 * 60)
+        self.assertEqual(self._session([overlap, active]), 15 * 60)
+
 
 if __name__ == "__main__":
     unittest.main()
