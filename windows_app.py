@@ -971,25 +971,57 @@ class TimeTrackerApp:
                     font=("Segoe UI", 8),
                 )
 
+    def _recent_period_values(self, period: ActivityPeriod) -> tuple[str, str, str, str, str]:
+        return (
+            period.started_at.astimezone().strftime("%Y-%m-%d %H:%M:%S"),
+            "Idle" if period.is_idle else period.application,
+            (
+                "No keyboard or mouse activity"
+                if period.is_idle
+                else period.window_title
+            ),
+            format_clock(period.duration_seconds),
+            "Idle" if period.is_idle else "Active",
+        )
+
     def _show_recent_periods(self, periods: list[ActivityPeriod]) -> None:
-        for item in self.recent_tree.get_children():
-            self.recent_tree.delete(item)
-        for period in periods:
-            self.recent_tree.insert(
-                "",
-                "end",
-                values=(
-                    period.started_at.astimezone().strftime("%Y-%m-%d %H:%M:%S"),
-                    "Idle" if period.is_idle else period.application,
-                    (
-                        "No keyboard or mouse activity"
-                        if period.is_idle
-                        else period.window_title
-                    ),
-                    format_clock(period.duration_seconds),
-                    "Idle" if period.is_idle else "Active",
-                ),
-            )
+        tree = self.recent_tree
+        selected = tree.selection()
+        selected_id = selected[0] if selected else ""
+        focused_id = tree.focus()
+        previous_offset = tree.yview()[0]
+        was_at_top = not tree.get_children() or previous_offset <= 0.001
+        incoming = {str(period.id) for period in periods}
+
+        for item in list(tree.get_children()):
+            if item not in incoming:
+                tree.delete(item)
+
+        for index, period in enumerate(periods):
+            iid = str(period.id)
+            values = self._recent_period_values(period)
+            if tree.exists(iid):
+                tree.item(iid, values=values)
+                tree.move(iid, "", index)
+            else:
+                tree.insert("", index, iid=iid, values=values)
+
+        if selected_id and tree.exists(selected_id):
+            tree.selection_set(selected_id)
+        else:
+            current = tree.selection()
+            if current:
+                tree.selection_remove(*current)
+
+        if focused_id and tree.exists(focused_id):
+            tree.focus(focused_id)
+
+        if was_at_top:
+            tree.yview_moveto(0)
+        elif selected_id and tree.exists(selected_id):
+            tree.see(selected_id)
+        else:
+            tree.yview_moveto(previous_offset)
 
     def reset_activity(self) -> None:
         confirmed = messagebox.askyesno(
