@@ -135,7 +135,10 @@ continuously reading or interacting with the content.
 
 ## Desktop interface
 
-The application provides three views.
+The application provides three views. Ctrl+Tab and Ctrl+Shift+Tab move between
+them. Alt+D opens Dashboard, Alt+U opens Usage analysis, and Alt+R opens
+Reports and data. Tab and Shift+Tab still move through the controls on the
+current view. Reset has no keyboard mnemonic.
 
 ### Dashboard
 

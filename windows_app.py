@@ -289,13 +289,15 @@ class TimeTrackerApp:
         )
 
         notebook = ttk.Notebook(container)
+        self.notebook = notebook
         notebook.pack(fill="both", expand=True)
+        notebook.enable_traversal()
         dashboard = ttk.Frame(notebook, style="App.TFrame", padding=(0, 14, 0, 0))
         analysis_tab = ttk.Frame(notebook, style="App.TFrame", padding=(0, 14, 0, 0))
         reports_tab = ttk.Frame(notebook, style="App.TFrame", padding=(0, 14, 0, 0))
-        notebook.add(dashboard, text="  Dashboard  ")
-        notebook.add(analysis_tab, text="  Usage analysis  ")
-        notebook.add(reports_tab, text="  Reports and data  ")
+        notebook.add(dashboard, text="Dashboard", underline=0)
+        notebook.add(analysis_tab, text="Usage analysis", underline=0)
+        notebook.add(reports_tab, text="Reports and data", underline=0)
 
         current_card = ttk.Frame(dashboard, style="Card.TFrame", padding=(20, 17))
         current_card.pack(fill="x", pady=(0, 14))
