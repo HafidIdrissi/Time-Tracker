@@ -143,6 +143,43 @@ class AnalyticsTests(unittest.TestCase):
         self.assertEqual(analytics.average_daily_seconds, 10 * 60)
         self.assertEqual(len(analytics.buckets), 7)
 
+    def test_hourly_and_daily_bucket_boundaries(self) -> None:
+        day = date(2026, 1, 15)
+        empty = analyze_usage([], day, day)
+        self.assertEqual(len(empty.buckets), 24)
+        self.assertEqual([bucket.label for bucket in empty.buckets], [f"{hour:02d} h" for hour in range(24)])
+
+        start = datetime(2026, 1, 15, 10, 50).astimezone()
+        crossing = self._period(start, 20, "Code.exe", "Editor", "Work", "#111111")
+        hourly = analyze_usage([crossing], day, day)
+        self.assertEqual(hourly.buckets[10].total_seconds, 10 * 60)
+        self.assertEqual(hourly.buckets[11].total_seconds, 10 * 60)
+        self.assertEqual(sum(bucket.total_seconds for bucket in hourly.buckets), hourly.active_seconds)
+
+        idle = self._period(
+            datetime(2026, 1, 15, 12, 0).astimezone(),
+            30,
+            "Idle",
+            "Break",
+            "Idle",
+            "#999999",
+            idle=True,
+        )
+        with_idle = analyze_usage([crossing, idle], day, day)
+        self.assertEqual(with_idle.buckets[12].total_seconds, 0)
+        self.assertEqual(sum(bucket.total_seconds for bucket in with_idle.buckets), with_idle.active_seconds)
+
+        week = analyze_usage([], date(2026, 1, 15), date(2026, 1, 17))
+        self.assertEqual(len(week.buckets), 3)
+
+        late = datetime(2026, 1, 15, 23, 30).astimezone()
+        overnight = self._period(late, 60, "Code.exe", "Editor", "Work", "#111111")
+        daily = analyze_usage([overnight], date(2026, 1, 15), date(2026, 1, 16))
+        self.assertEqual(len(daily.buckets), 2)
+        self.assertEqual(daily.buckets[0].total_seconds, 30 * 60)
+        self.assertEqual(daily.buckets[1].total_seconds, 30 * 60)
+        self.assertEqual(sum(bucket.total_seconds for bucket in daily.buckets), daily.active_seconds)
+
 
 if __name__ == "__main__":
     unittest.main()
