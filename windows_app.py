@@ -11,10 +11,11 @@ import threading
 from datetime import date, datetime, timedelta
 from pathlib import Path
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import filedialog, messagebox, ttk
 
 from timetracker import __version__
 from timetracker.analytics import UsageAnalytics, analyze_usage
+from timetracker.backup import backup_activity_database as copy_activity_database
 from timetracker.categories import CategoryConfigError, load_categorizer
 from timetracker.database import ActivityDatabase
 from timetracker.models import ActivityPeriod, ActivitySnapshot
@@ -438,6 +439,12 @@ class TimeTrackerApp:
             background="#ffffff",
             foreground="#64748b",
             wraplength=900,
+        ).pack(anchor="w", pady=(0, 12))
+        ttk.Button(
+            data_card,
+            text="Back up activity database",
+            command=self.backup_activity_database,
+            style="App.TButton",
         ).pack(anchor="w", pady=(0, 12))
         self.reset_data_button = ttk.Button(
             data_card,
@@ -990,6 +997,38 @@ class TimeTrackerApp:
                     "Idle" if period.is_idle else "Active",
                 ),
             )
+
+    def backup_activity_database(self) -> None:
+        destination = filedialog.asksaveasfilename(
+            title="Back up activity database",
+            defaultextension=".db",
+            filetypes=[("SQLite database", "*.db")],
+        )
+        if not destination:
+            return
+        destination_path = Path(destination)
+        if destination_path.exists():
+            confirmed = messagebox.askyesno(
+                "Replace existing file",
+                "A file already exists at this location. Replace it with the backup?",
+                icon="warning",
+            )
+            if not confirmed:
+                return
+        try:
+            copy_activity_database(DATABASE_PATH, destination_path)
+        except (OSError, sqlite3.Error):
+            messagebox.showerror(
+                "Unable to back up",
+                "The activity database could not be copied. No backup file was kept.",
+            )
+            return
+        messagebox.showinfo(
+            "Backup created",
+            "A copy of the activity database was written to the selected file. "
+            "It can contain sensitive window titles and does not include HTML reports "
+            "or category configuration.",
+        )
 
     def reset_activity(self) -> None:
         confirmed = messagebox.askyesno(

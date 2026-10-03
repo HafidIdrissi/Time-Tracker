@@ -161,7 +161,14 @@ separate visits to the same tab are added together.
 
 - generate an offline HTML report for a selected date;
 - open the local reports folder;
+- back up the activity database to a file you choose;
 - reset all recorded activity from the interface.
+
+**Back up activity database** uses a SQLite snapshot, so recent committed
+activity is included while tracking continues. The copy can contain sensitive
+window titles. It does not include HTML reports or `config.json`. An existing
+destination is replaced only after you confirm. A failed backup does not leave
+a partial file in place of a successful one.
 
 Reset deletes periods from the SQLite database. Previously generated HTML
 reports are intentionally kept. The official uninstaller removes the local app
