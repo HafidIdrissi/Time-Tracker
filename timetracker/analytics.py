@@ -63,6 +63,21 @@ class UsageAnalytics:
     buckets: tuple[UsageBucket, ...]
 
 
+def usage_analysis_range(today: date, selection: str) -> tuple[date, date]:
+    """Return the inclusive local dates covered by a usage-analysis choice.
+
+    ``week`` is today and the six preceding calendar days. ``previous-week``
+    is the seven complete calendar days immediately before that window.
+    """
+
+    if selection == "week":
+        return today - timedelta(days=6), today
+    if selection == "previous-week":
+        end_day = today - timedelta(days=7)
+        return end_day - timedelta(days=6), end_day
+    return today, today
+
+
 def browser_tab_title(application: str, window_title: str) -> str | None:
     """Return a cleaned browser tab title, or ``None`` for non-browsers."""
 

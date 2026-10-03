@@ -14,7 +14,7 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 
 from timetracker import __version__
-from timetracker.analytics import UsageAnalytics, analyze_usage
+from timetracker.analytics import UsageAnalytics, analyze_usage, usage_analysis_range
 from timetracker.categories import CategoryConfigError, load_categorizer
 from timetracker.database import ActivityDatabase
 from timetracker.models import ActivityPeriod, ActivitySnapshot
@@ -496,6 +496,13 @@ class TimeTrackerApp:
             value="week",
             command=lambda: self._refresh_analysis(schedule=False),
         ).pack(side="left", padx=(16, 0))
+        ttk.Radiobutton(
+            selector,
+            text="Previous 7 days",
+            variable=self.analysis_range,
+            value="previous-week",
+            command=lambda: self._refresh_analysis(schedule=False),
+        ).pack(side="left", padx=(16, 0))
         ttk.Label(
             selector,
             textvariable=self.analysis_period_text,
@@ -787,11 +794,8 @@ class TimeTrackerApp:
 
     def _refresh_analysis(self, schedule: bool = True) -> None:
         try:
-            end_day = date.today()
-            start_day = (
-                end_day - timedelta(days=6)
-                if self.analysis_range.get() == "week"
-                else end_day
+            start_day, end_day = usage_analysis_range(
+                date.today(), self.analysis_range.get()
             )
             self.analysis_period_text.set(
                 end_day.strftime("Today · %Y-%m-%d")

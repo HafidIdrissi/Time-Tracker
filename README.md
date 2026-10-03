@@ -147,12 +147,17 @@ The application provides three views.
 
 ### Usage analysis
 
-- Today and Last 7 days views;
+- Today, Last 7 days, and Previous 7 days views;
 - total active screen time and daily average;
 - longest continuous active session;
 - hourly or daily stacked usage chart;
 - most-used categories and applications;
 - most-used browser tabs.
+
+Previous 7 days is the seven complete local calendar days immediately before
+Last 7 days. If today is 29 September, Last 7 days covers 23–29 September and
+Previous 7 days covers 16–22 September. Choosing a period only changes the
+analysis view; it does not start, stop, or modify tracking.
 
 Browser titles such as `Gmail - Google Chrome` are normalized to `Gmail`, so
 separate visits to the same tab are added together.
