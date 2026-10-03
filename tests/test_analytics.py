@@ -143,6 +143,45 @@ class AnalyticsTests(unittest.TestCase):
         self.assertEqual(analytics.average_daily_seconds, 10 * 60)
         self.assertEqual(len(analytics.buckets), 7)
 
+    def test_rankings_break_duration_ties_deterministically(self) -> None:
+        start = datetime(2026, 7, 20, 9, 0).astimezone()
+        tied = [
+            self._period(start, 10, "msedge.exe", "Notes - Microsoft Edge", "zeta", "#00ff00"),
+            self._period(start, 10, "chrome.exe", "Inbox - Google Chrome", "Alpha", "#0000ff"),
+            self._period(start, 10, "firefox.exe", "Other - Mozilla Firefox", "alpha", "#ffffff"),
+        ]
+        day = start.date()
+        forward = analyze_usage(tied, day, day)
+        reverse = analyze_usage(list(reversed(tied)), day, day)
+
+        self.assertEqual(
+            [(name, color) for name, color, _seconds in forward.categories],
+            [("Alpha", "#0000ff"), ("alpha", "#ffffff"), ("zeta", "#00ff00")],
+        )
+        self.assertEqual(
+            [name for name, _seconds in forward.applications],
+            ["chrome.exe", "firefox.exe", "msedge.exe"],
+        )
+        self.assertEqual(
+            [(application, title) for application, title, _seconds in forward.browser_tabs],
+            [
+                ("chrome.exe", "Inbox"),
+                ("firefox.exe", "Other"),
+                ("msedge.exe", "Notes"),
+            ],
+        )
+        occupied = next(bucket for bucket in forward.buckets if bucket.categories)
+        reverse_occupied = next(bucket for bucket in reverse.buckets if bucket.categories)
+        self.assertEqual(
+            [name for name, _color, _seconds in occupied.categories],
+            ["Alpha", "alpha", "zeta"],
+        )
+        self.assertEqual(forward.categories, reverse.categories)
+        self.assertEqual(forward.applications, reverse.applications)
+        self.assertEqual(forward.browser_tabs, reverse.browser_tabs)
+        self.assertEqual(occupied.categories, reverse_occupied.categories)
+        self.assertEqual(forward.active_seconds, reverse.active_seconds)
+
 
 if __name__ == "__main__":
     unittest.main()

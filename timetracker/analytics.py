@@ -137,6 +137,46 @@ def _bucket_boundaries(
     return boundaries
 
 
+def _category_ranking(
+    totals: dict[tuple[str, str], float],
+) -> tuple[tuple[str, str, float], ...]:
+    """Order categories by descending duration, then name, then color."""
+
+    return tuple(
+        (name, color, seconds)
+        for (name, color), seconds in sorted(
+            totals.items(),
+            key=lambda item: (-item[1], item[0][0].casefold(), item[0][1].casefold()),
+        )
+    )
+
+
+def _application_ranking(totals: dict[str, float]) -> tuple[tuple[str, float], ...]:
+    """Order applications by descending duration, then name."""
+
+    return tuple(
+        sorted(totals.items(), key=lambda item: (-item[1], item[0].casefold()))
+    )
+
+
+def _browser_tab_ranking(
+    totals: dict[tuple[str, str], float],
+) -> tuple[tuple[str, str, float], ...]:
+    """Order browser tabs by descending duration, then application and title."""
+
+    return tuple(
+        (application, title, seconds)
+        for (application, title), seconds in sorted(
+            totals.items(),
+            key=lambda item: (
+                -item[1],
+                item[0][0].casefold(),
+                item[0][1].casefold(),
+            ),
+        )
+    )
+
+
 def _usage_buckets(
     periods: list[ReportPeriod], start_day: date, end_day: date
 ) -> tuple[UsageBucket, ...]:
@@ -149,12 +189,7 @@ def _usage_buckets(
             end = min(period.ended_at, bucket_end)
             if end > start:
                 totals[(period.category, period.color)] += (end - start).total_seconds()
-        categories = tuple(
-            (name, color, seconds)
-            for (name, color), seconds in sorted(
-                totals.items(), key=lambda item: -item[1]
-            )
-        )
+        categories = _category_ranking(totals)
         buckets.append(UsageBucket(label=label, categories=categories))
     return tuple(buckets)
 
@@ -180,21 +215,9 @@ def analyze_usage(
         if tab_title is not None:
             tab_totals[(period.application, tab_title)] += period.duration_seconds
 
-    categories = tuple(
-        (name, color, seconds)
-        for (name, color), seconds in sorted(
-            category_totals.items(), key=lambda item: -item[1]
-        )
-    )
-    applications = tuple(
-        sorted(application_totals.items(), key=lambda item: -item[1])
-    )
-    browser_tabs = tuple(
-        (application, title, seconds)
-        for (application, title), seconds in sorted(
-            tab_totals.items(), key=lambda item: -item[1]
-        )
-    )
+    categories = _category_ranking(category_totals)
+    applications = _application_ranking(application_totals)
+    browser_tabs = _browser_tab_ranking(tab_totals)
     day_count = max(1, (end_day - start_day).days + 1)
     return UsageAnalytics(
         active_seconds=active_seconds,
