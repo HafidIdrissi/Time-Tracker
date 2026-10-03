@@ -275,6 +275,9 @@ Run the automated test suite:
 .\.venv\Scripts\python.exe -m unittest discover -v
 ```
 
+A fictional database for interface checks is described in
+[docs/SYNTHETIC_ACTIVITY.md](docs/SYNTHETIC_ACTIVITY.md).
+
 Recommended interface smoke test:
 
 1. start `windows_app.py` and confirm the status is **Running**;
