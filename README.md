@@ -19,6 +19,8 @@ telemetry.
 
 ### [Download Local Time Tracker for Windows](https://github.com/HafidIdrissi/Time-Tracker/releases/latest)
 
+New to the app? Follow the [five-minute first-run guide](docs/FIRST_RUN.md).
+
 Download the `LocalTimeTracker-Setup-<version>-x64.exe` installer from the
 latest release. A SHA-256 checksum is published beside every installer.
 
