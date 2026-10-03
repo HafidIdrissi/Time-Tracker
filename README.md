@@ -332,7 +332,8 @@ increment the version and create a new tag.
 ## Contributing
 
 Bug reports, feature ideas, documentation improvements, and code contributions
-are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md), browse the
+are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) and the
+[architecture guide](docs/ARCHITECTURE.md), browse the
 [roadmap](ROADMAP.md), or start with a
 [`good first issue`](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
 

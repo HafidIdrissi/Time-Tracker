@@ -94,6 +94,9 @@ installer or uninstaller.
       is included.
 - [ ] The pull request explains any privacy or compatibility impact.
 
+For the path from a Windows sample to the database, dashboard, and offline
+report, read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
 ## Project principles
 
 Contributions should preserve the project's core promises:
