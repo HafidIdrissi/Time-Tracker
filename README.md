@@ -285,6 +285,7 @@ Preview one synthetic application and title without tracking or a database:
 ```powershell
 python preview_category.py --config config.example.json --application chrome.exe --title "Fictional inbox gmail"
 python preview_category.py --config config.example.json --application notes.exe --title "No matching keyword"
+python preview_category.py --version
 ```
 
 Invalid configuration prints a short error and returns a non-zero status. The
@@ -336,6 +337,7 @@ Generate reports:
 python report.py
 python report.py --date 2026-07-20
 python report.py --from 2026-07-14 --to 2026-07-20
+python report.py --version
 ```
 
 Reports contain active and idle totals, categories, a timeline overview,
