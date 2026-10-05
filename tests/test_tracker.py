@@ -185,6 +185,41 @@ class TrackerTests(unittest.TestCase):
         self.assertEqual(periods[1].duration_seconds, 10)
         self.assertGreaterEqual(periods[1].duration_seconds, 0)
 
+    def test_stop_requested_before_run_never_samples(self) -> None:
+        origin = datetime(2026, 7, 20, 8, 0, tzinfo=timezone.utc)
+        clock = {"value": origin}
+
+        def now() -> datetime:
+            current = clock["value"]
+            clock["value"] = current + timedelta(seconds=1)
+            return current
+
+        class CountingProvider:
+            def __init__(self) -> None:
+                self.calls = 0
+
+            def sample(self) -> ActivitySnapshot:
+                self.calls += 1
+                raise AssertionError("The provider must not be sampled")
+
+        provider = CountingProvider()
+        with tempfile.TemporaryDirectory() as directory:
+            with ActivityDatabase(Path(directory) / "activity.db") as database:
+                tracker = ActivityTracker(
+                    database,
+                    provider,
+                    poll_interval=30,
+                    now=now,
+                )
+                tracker.stop()
+                tracker.stop()
+                tracker.run()
+                stored = database.all_periods()
+
+        self.assertEqual(provider.calls, 0)
+        self.assertEqual(stored, [])
+        self.assertEqual(clock["value"], origin + timedelta(seconds=1))
+
 
 if __name__ == "__main__":
     unittest.main()
