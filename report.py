@@ -8,6 +8,7 @@ import sqlite3
 from datetime import date
 from pathlib import Path
 
+from timetracker import __version__
 from timetracker.categories import CategoryConfigError, load_categorizer
 from timetracker.reporting import generate_report
 
@@ -30,6 +31,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--database", type=Path, default=Path("data/activity.db"))
     parser.add_argument("--config", type=Path, default=None)
     parser.add_argument("--output", type=Path, default=None)
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
+    )
     return parser
 
 

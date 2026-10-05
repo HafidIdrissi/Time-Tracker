@@ -7,6 +7,7 @@ import argparse
 import sys
 from pathlib import Path
 
+from timetracker import __version__
 from timetracker.categories import CategoryConfigError, load_categorizer
 
 
@@ -21,6 +22,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--idle",
         action="store_true",
         help="Preview the idle category instead of keyword matching",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
     )
     return parser
 
