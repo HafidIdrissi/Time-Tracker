@@ -51,7 +51,40 @@ class DatabaseTimeTests(unittest.TestCase):
         self.assertEqual(periods[1].window_title, "Pause café")
         self.assertEqual(periods[1].duration_seconds, 4 * 60)
         self.assertTrue(path.name == "activity.db")
+    
+    def test_recent_periods_tie_breaker_and_limit_validation(self) -> None:
+        start = datetime(2026, 10, 1, 10, 0, tzinfo=timezone.utc)
+        fixed_end = datetime(2026, 10, 1, 11, 0, tzinfo=timezone.utc)
 
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "activity.db"
+            with ActivityDatabase(path) as database:
+                id1 = database.create_period(ActivityState("app1.exe", "Active App"), start)
+                id2 = database.create_period(ActivityState("Idle", "Away", is_idle=True), start)
+                id3 = database.create_period(ActivityState("app2.exe", "Another App"), start)
+
+                database.update_period(id1, start, fixed_end)
+                database.update_period(id2, start, fixed_end)
+                database.update_period(id3, start, fixed_end)
+
+                read_1 = database.recent_periods(limit=5)
+                read_2 = database.recent_periods(limit=5)
+
+                self.assertEqual(read_1, read_2)
+                self.assertEqual([r.id for r in read_1], [id3, id2, id1])
+
+                small_limit = database.recent_periods(limit=2)
+                self.assertEqual(len(small_limit), 2)
+                self.assertEqual([r.id for r in small_limit], [id3, id2])
+
+                large_limit = database.recent_periods(limit=100)
+                self.assertEqual(len(large_limit), 3)
+
+                with self.assertRaises(ValueError):
+                    database.recent_periods(limit=0)
+
+                with self.assertRaises(ValueError):
+                    database.recent_periods(limit=-1)
 
 if __name__ == "__main__":
     unittest.main()

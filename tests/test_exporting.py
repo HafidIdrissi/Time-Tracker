@@ -4,6 +4,7 @@ import csv
 import json
 import tempfile
 import unittest
+from unittest import mock
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -96,6 +97,41 @@ class ExportTests(unittest.TestCase):
             export_activity(source, root / "out.json", "json")
             self.assertEqual(sibling.read_text(encoding="utf-8"), "keep this sibling")
             self.assertTrue((root / "out.json").is_file())
+
+    def test_unsupported_formats_exit_before_touching_the_filesystem(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "activity.db"
+            source.write_bytes(b"not a database")
+            destination = root / "missing" / "out.csv"
+            existing = root / "kept.json"
+            existing.write_text("leave me", encoding="utf-8")
+
+            with mock.patch(
+                "timetracker.exporting.ActivityDatabase",
+                side_effect=AssertionError("database opened"),
+            ) as database_type:
+                for file_format in ("", "xml"):
+                    with self.assertRaises(ValueError) as caught:
+                        export_activity(source, destination, file_format)
+                    message = str(caught.exception)
+                    self.assertIn("csv", message)
+                    self.assertIn("json", message)
+
+            database_type.assert_not_called()
+            self.assertFalse((root / "missing").exists())
+            self.assertEqual(existing.read_text(encoding="utf-8"), "leave me")
+            self.assertEqual(source.read_bytes(), b"not a database")
+            self.assertEqual(list(root.glob("**/*.tmp")), [])
+
+    def test_mixed_case_csv_and_json_names_are_accepted(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = self._database(root)
+            csv_path = export_activity(source, root / "out.csv", "CSV")
+            json_path = export_activity(source, root / "out.json", "Json")
+            self.assertTrue(csv_path.read_text(encoding="utf-8").startswith("application,"))
+            self.assertTrue(json_path.read_text(encoding="utf-8").lstrip().startswith("["))
 
 
 if __name__ == "__main__":

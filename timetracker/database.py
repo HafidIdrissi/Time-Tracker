@@ -106,6 +106,13 @@ class ActivityDatabase:
     ) -> list[ActivityPeriod]:
         """Return periods overlapping the half-open interval [start, end)."""
 
+        start_utc = to_utc(range_start)
+        end_utc = to_utc(range_end)
+        if end_utc < start_utc:
+            raise ValueError("range_end must not precede range_start")
+        if end_utc == start_utc:
+            return []
+
         rows = self.connection.execute(
             """
             SELECT id, application, window_title, started_at, ended_at,
@@ -114,7 +121,7 @@ class ActivityDatabase:
             WHERE ended_at > ? AND started_at < ?
             ORDER BY started_at ASC, id ASC
             """,
-            (to_storage(range_start), to_storage(range_end)),
+            (to_storage(start_utc), to_storage(end_utc)),
         ).fetchall()
         return [
             self._period_from_row(row)

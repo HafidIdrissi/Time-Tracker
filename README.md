@@ -8,6 +8,12 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-4f46e5.svg)](LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078d4.svg)](#requirements)
 
+> **Windows testers wanted — v1.3.0**
+>
+> Use Windows 10 or 11? Try [Local Time Tracker v1.3.0](https://github.com/HafidIdrissi/Time-Tracker/releases/tag/v1.3.0) and share a short report about installation, tracking accuracy, and ease of use. No coding experience needed.
+>
+> **[See the one-day test guide and leave feedback](https://github.com/HafidIdrissi/Time-Tracker/discussions/2).** Shorter tests are welcome. Please keep personal activity databases, reports, and private window titles out of your feedback.
+
 > **Contributors welcome!**
 >
 > Choose an open, unassigned [good first issue](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20label%3A%22good%20first%20issue%22) for documentation, report accessibility or focused Python work. Browse [help wanted tasks](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20label%3A%22help%20wanted%22) for desktop, analytics, exports and Windows packaging improvements.

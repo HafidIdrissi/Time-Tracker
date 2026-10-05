@@ -220,6 +220,50 @@ class TrackerTests(unittest.TestCase):
         self.assertEqual(stored, [])
         self.assertEqual(clock["value"], origin + timedelta(seconds=1))
 
+    def test_run_loop_recovers_from_transient_provider_exceptions(self) -> None:
+        origin = datetime(2026, 7, 20, 8, 0, tzinfo=timezone.utc)
+        moments = [origin]
+
+        def now() -> datetime:
+            current = moments[0]
+            moments[0] = current + timedelta(seconds=2)
+            return current
+
+        class FlakyProvider:
+            def __init__(self) -> None:
+                self.calls = 0
+                self.tracker: ActivityTracker | None = None
+
+            def sample(self) -> ActivitySnapshot:
+                self.calls += 1
+                if self.calls == 1:
+                    return ActivitySnapshot(ActivityState("Code.exe", "Editor"), 0)
+                elif self.calls == 2:
+                    raise RuntimeError("Transient provider error")
+                elif self.calls == 3:
+                    return ActivitySnapshot(ActivityState("firefox.exe", "Docs"), 0)
+                else:
+                    assert self.tracker is not None
+                    self.tracker.stop()
+                    return ActivitySnapshot(ActivityState("firefox.exe", "Docs"), 0)
+
+        provider = FlakyProvider()
+        with tempfile.TemporaryDirectory() as directory:
+            with ActivityDatabase(Path(directory) / "activity.db") as database:
+                tracker = ActivityTracker(
+                    database, provider, poll_interval=0.001, idle_threshold=180, now=now
+                )
+                provider.tracker = tracker
+                tracker.run()
+                periods = self._periods(database, origin)
+
+        self.assertEqual(provider.calls, 4)
+        self.assertEqual(len(periods), 2)
+        self.assertEqual(periods[0].application, "Code.exe")
+        self.assertEqual(periods[0].duration_seconds, 4)
+        self.assertEqual(periods[1].application, "firefox.exe")
+        self.assertEqual(periods[1].duration_seconds, 4)
+
 
 if __name__ == "__main__":
     unittest.main()
