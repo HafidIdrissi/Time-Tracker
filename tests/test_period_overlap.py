@@ -48,6 +48,36 @@ class PeriodOverlapTests(unittest.TestCase):
         self.assertEqual(found[2].started_at, inside[0])
         self.assertEqual(found[2].ended_at, same_start_later[1])
 
+    def test_reversed_and_empty_bounds_are_validated_before_sql(self) -> None:
+        start = datetime(2026, 3, 4, 12, 0, tzinfo=timezone.utc)
+        same_instant = datetime(2026, 3, 4, 13, 0, tzinfo=timezone(timedelta(hours=1)))
+        earlier = start - timedelta(minutes=1)
+        naive = datetime(2026, 3, 4, 12, 0)
+
+        with tempfile.TemporaryDirectory() as directory:
+            with ActivityDatabase(Path(directory) / "activity.db") as database:
+                statements: list[str] = []
+                database.connection.set_trace_callback(statements.append)
+                try:
+                    with self.assertRaises(ValueError) as reversed_bounds:
+                        database.periods_between(start, earlier)
+                    self.assertIn("precede", str(reversed_bounds.exception))
+
+                    self.assertEqual(database.periods_between(start, start), [])
+                    self.assertEqual(database.periods_between(start, same_instant), [])
+                    self.assertEqual(statements, [])
+
+                    found = database.periods_between(earlier, start)
+                    self.assertEqual(found, [])
+                    self.assertEqual(len(statements), 1)
+
+                    with self.assertRaises(ValueError) as unaware:
+                        database.periods_between(naive, start)
+                    self.assertIn("timezone-aware", str(unaware.exception))
+                    self.assertEqual(len(statements), 1)
+                finally:
+                    database.connection.set_trace_callback(None)
+
 
 if __name__ == "__main__":
     unittest.main()
