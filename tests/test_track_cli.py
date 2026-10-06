@@ -17,6 +17,12 @@ class TrackCliTests(unittest.TestCase):
                 2.0,
                 30.0,
             ),
+            (
+                ["track.py", "--interval", "0.5", "--idle-after", "0.25"],
+                Path("data/activity.db"),
+                0.5,
+                0.25,
+            ),
         ]
         for argv, database_path, interval, idle_after in cases:
             with self.subTest(argv=argv):
@@ -45,15 +51,26 @@ class TrackCliTests(unittest.TestCase):
             self.assertEqual(track.main(), 1)
         database_cls.assert_not_called()
 
-    def test_non_positive_settings_exit_with_status_one(self) -> None:
-        database = mock.MagicMock()
-        with (
-            mock.patch("sys.argv", ["track.py", "--interval", "0"]),
-            mock.patch("track.WindowsActivityProvider"),
-            mock.patch("track.ActivityDatabase", return_value=database),
-        ):
-            self.assertEqual(track.main(), 1)
-        database.__exit__.assert_called_once()
+    def test_invalid_settings_exit_before_constructing_dependencies(self) -> None:
+        for option in ("--interval", "--idle-after"):
+            for value in ("nan", "inf", "-inf", "0", "-1"):
+                with self.subTest(option=option, value=value):
+                    with (
+                        mock.patch("sys.argv", ["track.py", f"{option}={value}"]),
+                        mock.patch("track.WindowsActivityProvider") as provider,
+                        mock.patch("track.ActivityDatabase") as database_cls,
+                        mock.patch("track.ActivityTracker") as tracker_cls,
+                        self.assertLogs(level="ERROR") as logs,
+                    ):
+                        self.assertEqual(track.main(), 1)
+
+                    provider.assert_not_called()
+                    database_cls.assert_not_called()
+                    tracker_cls.assert_not_called()
+                    self.assertIn(
+                        f"{option} must be finite and greater than zero",
+                        "\n".join(logs.output),
+                    )
 
     def test_keyboard_interrupt_stops_the_tracker_and_closes_the_database(self) -> None:
         database = mock.MagicMock()

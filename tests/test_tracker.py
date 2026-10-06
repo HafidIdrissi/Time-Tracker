@@ -4,6 +4,7 @@ import tempfile
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from unittest import mock
 
 from timetracker.database import ActivityDatabase
 from timetracker.models import ActivitySnapshot, ActivityState
@@ -229,6 +230,39 @@ class TrackerTests(unittest.TestCase):
         self.assertEqual(periods[1].application, "firefox.exe")
         self.assertEqual(periods[1].duration_seconds, 4)
 
+    def test_constructor_rejects_invalid_settings(self) -> None:
+        for setting in ("poll_interval", "idle_threshold"):
+            for value in (float("nan"), float("inf"), float("-inf"), 0.0, -1.0):
+                with self.subTest(setting=setting, value=value):
+                    database = mock.Mock(spec=ActivityDatabase)
+                    provider = mock.Mock(spec=UnusedProvider)
+
+                    with self.assertRaisesRegex(
+                        ValueError,
+                        f"{setting} must be finite and greater than zero",
+                    ):
+                        ActivityTracker(database, provider, **{setting: value})
+
+                    self.assertEqual(database.mock_calls, [])
+                    self.assertEqual(provider.mock_calls, [])
+
+    def test_constructor_accepts_defaults_custom_and_fractional_settings(self) -> None:
+        cases = [
+            ({}, 5.0, 180.0),
+            ({"poll_interval": 2.0, "idle_threshold": 30.0}, 2.0, 30.0),
+            ({"poll_interval": 0.5, "idle_threshold": 0.25}, 0.5, 0.25),
+        ]
+        for settings, interval, threshold in cases:
+            with self.subTest(settings=settings):
+                database = mock.Mock(spec=ActivityDatabase)
+                provider = mock.Mock(spec=UnusedProvider)
+
+                tracker = ActivityTracker(database, provider, **settings)
+
+                self.assertEqual(tracker.poll_interval, interval)
+                self.assertEqual(tracker.idle_threshold, threshold)
+                self.assertEqual(database.mock_calls, [])
+                self.assertEqual(provider.mock_calls, [])
 
 if __name__ == "__main__":
     unittest.main()

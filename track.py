@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import math
 from pathlib import Path
 
 from timetracker import __version__
@@ -51,6 +52,10 @@ def main() -> int:
     )
 
     try:
+        if not math.isfinite(args.interval) or args.interval <= 0:
+            raise ValueError("--interval must be finite and greater than zero")
+        if not math.isfinite(args.idle_after) or args.idle_after <= 0:
+            raise ValueError("--idle-after must be finite and greater than zero")
         provider = WindowsActivityProvider()
         with ActivityDatabase(args.database) as database:
             tracker = ActivityTracker(

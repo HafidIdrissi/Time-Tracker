@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import math
 import threading
 from datetime import datetime, timedelta
 from typing import Callable, Protocol
@@ -34,10 +35,10 @@ class ActivityTracker:
         idle_threshold: float = 180.0,
         now: Callable[[], datetime] | None = None,
     ) -> None:
-        if poll_interval <= 0:
-            raise ValueError("poll_interval must be greater than zero")
-        if idle_threshold <= 0:
-            raise ValueError("idle_threshold must be greater than zero")
+        if not math.isfinite(poll_interval) or poll_interval <= 0:
+            raise ValueError("poll_interval must be finite and greater than zero")
+        if not math.isfinite(idle_threshold) or idle_threshold <= 0:
+            raise ValueError("idle_threshold must be finite and greater than zero")
 
         self.database = database
         self.provider = provider
