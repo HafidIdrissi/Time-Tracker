@@ -81,6 +81,29 @@ class DatabaseTests(unittest.TestCase):
         self.assertIsNotNone(row)
         return row
 
+    def test_context_exit_closes_the_connection_when_the_body_raises(self) -> None:
+        started = datetime(2026, 5, 6, 9, 30, tzinfo=timezone.utc)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "activity.db"
+            database = ActivityDatabase(path)
+            with self.assertRaises(RuntimeError) as caught:
+                with database:
+                    period_id = database.create_period(
+                        ActivityState("notes.exe", "Fictional notes"), started
+                    )
+                    database.update_period(period_id, started, started + timedelta(minutes=8))
+                    raise RuntimeError("sentinel failure")
+            self.assertEqual(str(caught.exception), "sentinel failure")
+            with self.assertRaises(sqlite3.ProgrammingError):
+                database.all_periods()
+
+            with ActivityDatabase(path) as reader:
+                periods = reader.all_periods()
+        self.assertEqual(len(periods), 1)
+        self.assertEqual(periods[0].application, "notes.exe")
+        self.assertEqual(periods[0].window_title, "Fictional notes")
+        self.assertEqual(periods[0].duration_seconds, 480)
+
 
 if __name__ == "__main__":
     unittest.main()
