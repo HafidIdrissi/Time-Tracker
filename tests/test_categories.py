@@ -164,6 +164,29 @@ class CategorizerTests(unittest.TestCase):
         self.assertEqual(categorizer.categories[0].name, "Work")
         self.assertEqual(categorizer.categories[0].keywords, ("code.exe", "Mail"))
 
+    def test_unicode_casefold_keeps_the_first_matching_rule(self) -> None:
+        payload = {
+            "default_category": "Other",
+            "default_color": "#64748b",
+            "categories": [
+                {"name": "Routes", "color": "#123456", "keywords": ["STRASSE"]},
+                {"name": "Streets", "color": "#abcdef", "keywords": ["straße"]},
+                {"name": "Notes", "color": "#0f172a", "keywords": ["ΣΗΜΕΙΩΣΕΙΣ"]},
+            ],
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "config.json"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            categorizer = load_categorizer(path)
+
+        self.assertEqual(categorizer.categorize("maps.exe", "Haupt Straße"), ("Routes", "#123456"))
+        self.assertEqual(categorizer.categorize("σημειωσεις.exe", "Untitled"), ("Notes", "#0f172a"))
+        self.assertEqual(categorizer.categorize("maps.exe", "Avenue"), ("Other", "#64748b"))
+        self.assertEqual(
+            categorizer.categorize("maps.exe", "Haupt Straße", is_idle=True),
+            ("Idle", "#94a3b8"),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
