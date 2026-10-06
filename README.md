@@ -446,8 +446,14 @@ for documentation, report the walkthrough you actually performed. The
 [architecture guide](docs/ARCHITECTURE.md) and
 [fictional data guide](docs/SYNTHETIC_ACTIVITY.md) help you explore safely.
 
-For usage questions, see [SUPPORT.md](SUPPORT.md). Please follow the
-[Code of Conduct](CODE_OF_CONDUCT.md) in all project spaces.
+For usage questions, see [SUPPORT.md](SUPPORT.md). If dependencies install
+into the wrong Python, open a terminal in the project folder and confirm the
+environment matches: run `.venv\Scripts\python.exe -c "import sys; print(sys.executable, sys.version)"`,
+then install with that same interpreter: `.venv\Scripts\python.exe -m pip install -r requirements.txt`.
+When recreating the venv, use `py -3.11 -m venv .venv` (or another supported version) to select
+the correct interpreter. Avoid global Python changes or disabling PowerShell protections.
+For missing-Tk errors, see [#209](https://github.com/HafidIdrissi/Time-Tracker/issues/209).
+Please follow the [Code of Conduct](CODE_OF_CONDUCT.md) in all project spaces.
 
 ## License and publisher
 
