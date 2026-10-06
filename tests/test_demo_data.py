@@ -119,6 +119,31 @@ class DemoDataTests(unittest.TestCase):
             self.assertNotIn("Traceback", message)
             self.assertEqual(existing_file.read_text(encoding="utf-8"), "keep this intact")
 
+    def test_existing_wal_sidecar_is_left_untouched(self) -> None:
+        generator = load_generator()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / "demo"
+            output.mkdir()
+            wal = output / "activity.db-wal"
+            wal.write_bytes(b"sentinel-wal")
+            other = output / "notes.txt"
+            other.write_bytes(b"leave me")
+
+            with mock.patch.object(
+                generator, "ActivityDatabase", side_effect=AssertionError("constructed")
+            ) as database_type:
+                with self.assertRaises(FileExistsError):
+                    generator.generate_demo_database(output)
+            database_type.assert_not_called()
+            self.assertEqual(wal.read_bytes(), b"sentinel-wal")
+            self.assertEqual(other.read_bytes(), b"leave me")
+            self.assertEqual(sorted(path.name for path in output.iterdir()), ["activity.db-wal", "notes.txt"])
+
+            clean = generator.generate_demo_database(root / "clean")
+            self.assertTrue(clean.is_file())
+            self.assertGreaterEqual(len(stored_rows(clean)), 4)
+
 
 if __name__ == "__main__":
     unittest.main()
