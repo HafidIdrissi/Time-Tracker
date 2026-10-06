@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import json
+import sqlite3
 import tempfile
 import unittest
 from unittest import mock
@@ -132,6 +133,60 @@ class ExportTests(unittest.TestCase):
             json_path = export_activity(source, root / "out.json", "Json")
             self.assertTrue(csv_path.read_text(encoding="utf-8").startswith("application,"))
             self.assertTrue(json_path.read_text(encoding="utf-8").lstrip().startswith("["))
+
+    def test_export_includes_committed_rows_still_in_the_wal(self) -> None:
+        start = datetime(2026, 2, 2, 10, 0, tzinfo=timezone.utc)
+        idle_start = start + timedelta(minutes=20)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "activity.db"
+            writer = ActivityDatabase(source)
+            try:
+                writer.connection.execute("PRAGMA wal_autocheckpoint = 0")
+                active_id = writer.create_period(ActivityState("notes.exe", "Fictional notes"), start)
+                writer.update_period(active_id, start, idle_start)
+                idle_id = writer.create_period(ActivityState("Idle", "Pause", is_idle=True), idle_start)
+                writer.update_period(idle_id, idle_start, idle_start + timedelta(minutes=5))
+
+                wal_path = Path(str(source) + "-wal")
+                self.assertGreater(wal_path.stat().st_size, 32)
+                main_only = root / "main-only.db"
+                main_only.write_bytes(source.read_bytes())
+                with sqlite3.connect(main_only) as isolated:
+                    isolated_rows = isolated.execute(
+                        "SELECT COUNT(*) FROM sqlite_master WHERE name = 'activity_periods'"
+                    ).fetchone()
+                    if isolated_rows[0]:
+                        committed_in_main = isolated.execute(
+                            "SELECT COUNT(*) FROM activity_periods"
+                        ).fetchone()[0]
+                    else:
+                        committed_in_main = 0
+                self.assertEqual(committed_in_main, 0)
+
+                csv_path = export_activity(source, root / "out.csv", "csv")
+                json_path = export_activity(source, root / "out.json", "json")
+                with csv_path.open(encoding="utf-8", newline="") as handle:
+                    csv_rows = list(csv.DictReader(handle))
+                json_rows = json.loads(json_path.read_text(encoding="utf-8"))
+                self.assertEqual(
+                    [(row["application"], row["window_title"], row["duration_seconds"], row["is_idle"]) for row in csv_rows],
+                    [("notes.exe", "Fictional notes", "1200.0", "False"), ("Idle", "Pause", "300.0", "True")],
+                )
+                self.assertEqual(
+                    [(row["application"], row["window_title"], row["duration_seconds"], row["is_idle"]) for row in json_rows],
+                    [("notes.exe", "Fictional notes", 1200.0, False), ("Idle", "Pause", 300.0, True)],
+                )
+
+                later_id = writer.create_period(
+                    ActivityState("calendar.exe", "Fictional calendar"),
+                    idle_start + timedelta(minutes=5),
+                )
+                self.assertGreater(later_id, idle_id)
+                self.assertEqual(len(writer.all_periods()), 3)
+            finally:
+                writer.close()
+            self.assertEqual(list(root.glob("**/*.tmp")), [])
 
 
 if __name__ == "__main__":
