@@ -136,6 +136,10 @@ class NativeDesktopTests(TestCase):
         report = self.reports / f"report-{date.today().isoformat()}.html"
         self.wait(lambda: report.exists() and self.open_file.called)
         self.assertIn("Fictional title", report.read_text(encoding="utf-8"))
+        self.assertIn("Report generated:", self.app.report_status_text.get())
+        self.assertIn(str(report), self.app.report_status_text.get())
+        self.assertEqual(str(self.app.report_button.cget("state")), "normal")
+        self.assertEqual(str(self.app.report_date_entry.cget("state")), "normal")
         self.showerror.assert_not_called()
         self.stop()
         self.app.start_tracking()

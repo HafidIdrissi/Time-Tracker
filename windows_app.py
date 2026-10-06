@@ -156,6 +156,7 @@ class TimeTrackerApp:
         self.analysis_average_text = tk.StringVar(value="0 min")
         self.analysis_longest_text = tk.StringVar(value="0 min")
         self.report_date = tk.StringVar(value=date.today().isoformat())
+        self.report_status_text = tk.StringVar(value="")
 
         self._configure_window()
         self._configure_styles()
@@ -432,8 +433,8 @@ class TimeTrackerApp:
             background="#ffffff",
             foreground="#475569",
         ).grid(row=1, column=0, sticky="w", pady=(12, 4))
-        date_entry = ttk.Entry(report_card, textvariable=self.report_date, width=18)
-        date_entry.grid(row=2, column=0, sticky="w")
+        self.report_date_entry = ttk.Entry(report_card, textvariable=self.report_date, width=18)
+        self.report_date_entry.grid(row=2, column=0, sticky="w")
         self.report_button = ttk.Button(
             report_card,
             text="Generate and open report",
@@ -448,6 +449,13 @@ class TimeTrackerApp:
             style="App.TButton",
         ).grid(row=2, column=2, sticky="w", padx=(10, 0))
         report_card.columnconfigure(3, weight=1)
+        ttk.Label(
+            report_card,
+            textvariable=self.report_status_text,
+            background="#ffffff",
+            foreground="#475569",
+            wraplength=900,
+        ).grid(row=3, column=0, columnspan=4, sticky="w", pady=(10, 0))
 
         data_card = ttk.Frame(reports_tab, style="Card.TFrame", padding=(20, 18))
         data_card.pack(fill="x")
@@ -795,14 +803,23 @@ class TimeTrackerApp:
                         self.application_text.set(application)
                         self.window_text.set(window_title)
                 elif kind == "report_ready":
-                    self.report_button.configure(state="normal")
+                    output_path = str(payload)
+                    self.report_status_text.set(f"Report generated: {output_path}")
                     try:
-                        os.startfile(str(payload))
-                    except OSError as exc:
-                        messagebox.showerror("Unable to open", str(exc))
-                elif kind == "report_error":
+                        os.startfile(output_path)
+                    except OSError:
+                        self.report_status_text.set(
+                            f"Report generated: {output_path}"
+                            " (could not open automatically)"
+                        )
                     self.report_button.configure(state="normal")
-                    messagebox.showerror("Unable to generate report", str(payload))
+                    self.report_date_entry.configure(state="normal")
+                elif kind == "report_error":
+                    self.report_status_text.set(
+                        f"Report generation failed: {payload}"
+                    )
+                    self.report_button.configure(state="normal")
+                    self.report_date_entry.configure(state="normal")
         except queue.Empty:
             pass
         if not self.closing:
@@ -1239,11 +1256,13 @@ class TimeTrackerApp:
 
     def generate_selected_report(self) -> None:
         try:
-            selected_day = date.fromisoformat(self.report_date.get().strip())
-        except ValueError:
+            selected_day = date.fromisoformat(str(self.report_date.get()).strip())
+        except (TypeError, ValueError):
             messagebox.showwarning("Invalid date", "Use the YYYY-MM-DD format.")
             return
         self.report_button.configure(state="disabled")
+        self.report_date_entry.configure(state="disabled")
+        self.report_status_text.set("Generating report\u2026")
         threading.Thread(
             target=self._report_worker,
             args=(selected_day,),
