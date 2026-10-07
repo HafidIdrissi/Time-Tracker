@@ -104,10 +104,17 @@ def record(output: Path) -> None:
         )
         print(f"Validated fictional native demo: {duration:.2f}s, {path.stat().st_size} bytes")
     finally:
-        if process is not None and process.poll() is None:
-            process.terminate()
-            process.wait(timeout=10)
-        fixture.doCleanups()
+        try:
+            if process is not None and process.poll() is None:
+                process.terminate()
+                try:
+                    process.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    print("Recording process did not exit after terminate; killing.", file=sys.stderr)
+                    process.kill()
+                    process.wait(timeout=5)
+        finally:
+            fixture.doCleanups()
 
 
 if __name__ == "__main__":
