@@ -17,6 +17,50 @@ from timetracker.database import ActivityDatabase
 from timetracker.models import ActivityState
 
 
+def cleanup_recorder(
+    process: subprocess.Popen | None,
+    fixture: Any,
+    *,
+    primary_error: BaseException | None = None,
+) -> None:
+    """Clean up the recording subprocess and ensure fixture cleanup runs unconditionally.
+
+    If an unresponsive child ignores terminate(), falls back to kill().
+    If terminate() or kill() fails:
+      - If primary_error is set (recording already failed), reports the secondary cleanup
+        failure to stderr and retains primary_error as the primary diagnostic.
+      - If primary_error is None, propagates the cleanup failure.
+    fixture.doCleanups() runs in all execution paths.
+    """
+    cleanup_error: BaseException | None = None
+    try:
+        if process is not None and process.poll() is None:
+            try:
+                process.terminate()
+                try:
+                    process.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    print(
+                        "Recording process did not exit after terminate; killing.",
+                        file=sys.stderr,
+                    )
+                    process.kill()
+                    process.wait(timeout=5)
+            except BaseException as exc:
+                cleanup_error = exc
+    finally:
+        fixture.doCleanups()
+
+    if cleanup_error is not None:
+        if primary_error is not None:
+            print(
+                f"Secondary cleanup failure after recording error: {cleanup_error}",
+                file=sys.stderr,
+            )
+        else:
+            raise cleanup_error
+
+
 def record(output: Path) -> None:
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
@@ -24,6 +68,7 @@ def record(output: Path) -> None:
     output.mkdir(parents=True, exist_ok=True)
     fixture = NativeDesktopTests("test_tracker_titles_analysis_reports_stop_restart_and_reset")
     process = None
+    primary_error: BaseException | None = None
     try:
         fixture.setUp()
         app, root = fixture.app, fixture.root
@@ -103,18 +148,11 @@ def record(output: Path) -> None:
             encoding="utf-8",
         )
         print(f"Validated fictional native demo: {duration:.2f}s, {path.stat().st_size} bytes")
+    except BaseException as exc:
+        primary_error = exc
+        raise
     finally:
-        try:
-            if process is not None and process.poll() is None:
-                process.terminate()
-                try:
-                    process.wait(timeout=10)
-                except subprocess.TimeoutExpired:
-                    print("Recording process did not exit after terminate; killing.", file=sys.stderr)
-                    process.kill()
-                    process.wait(timeout=5)
-        finally:
-            fixture.doCleanups()
+        cleanup_recorder(process, fixture, primary_error=primary_error)
 
 
 if __name__ == "__main__":
