@@ -204,6 +204,37 @@ Reset deletes periods from the SQLite database. Previously generated HTML
 reports are intentionally kept. The official uninstaller removes the local app
 data directory.
 
+### Dates and time zones
+
+Activity timestamps are stored in UTC (`+00:00`), and CSV and JSON exports
+write those stored values. Report and desktop day selection work differently:
+they use the calendar of the machine's current timezone (see
+[Reports and data](#reports-and-data) and
+[Command-line tools](#command-line-tools)). A period close to UTC midnight can
+therefore belong to a different local report date than its UTC date.
+
+The example below uses fictional timestamps and an illustrative fixed offset of
+UTC+02:00. The app itself uses your machine's real timezone, and this example
+does not show daylight-saving changes.
+
+| Stored or exported (UTC) | Local time at UTC+02:00 | Local report date |
+| --- | --- | --- |
+| `2026-10-06T21:30:00+00:00` | `2026-10-06T23:30:00+02:00` | October 6 |
+| `2026-10-06T22:30:00+00:00` | `2026-10-07T00:30:00+02:00` | October 7 |
+
+At UTC+02:00, the October 7 report covers the half-open UTC interval from
+`2026-10-06T22:00:00+00:00` up to, but not including,
+`2026-10-07T22:00:00+00:00`. A period that crosses a report boundary is
+clipped to the report interval instead of being assigned only by its start
+date. For example, a period from 21:30 to 22:30 UTC on October 6 adds 30
+minutes to the October 6 report and 30 minutes to the October 7 report.
+
+Only the UTC timestamps are stored. The timezone your machine used when a
+period was recorded is not stored. If you change the machine's timezone,
+reports and day selection for past activity follow the new local calendar, so
+the same recorded period can appear under a different date. Exports are not
+affected, because they contain the stored UTC values.
+
 ## Local data and privacy
 
 Installed application data is stored under:
