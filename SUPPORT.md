@@ -14,6 +14,42 @@ Before posting:
 3. remove private window titles, account names, document names, and paths from
    screenshots or logs.
 
+### Dependencies installed into the wrong Python environment
+
+Import errors after installation usually mean `pip install` ran against a
+different Python than the one the project uses. Confirm the interpreter and
+its pip target before reinstalling:
+
+```powershell
+.\.venv\Scripts\python.exe -c "import sys; print(sys.executable, sys.version)"
+.\.venv\Scripts\python.exe -m pip --version
+```
+
+The first command prints the full path and version of the interpreter inside
+the virtual environment. The second shows which environment `pip` will install
+into. If either path points outside `.venv`, packages are landing in the wrong
+place.
+
+Install requirements with the same interpreter so every dependency reaches the
+correct environment:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+If the virtual environment was created with an unsupported interpreter, remove
+and recreate it with a supported version (Python 3.11 or later):
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+Not every `ImportError` is a Tk or system-library problem — check the
+interpreter path first. See [#209](https://github.com/HafidIdrissi/Time-Tracker/issues/209)
+for additional context.
+
 ## Bug reports
 
 Use the
