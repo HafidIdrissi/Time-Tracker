@@ -49,12 +49,15 @@ class ActivityTracker:
         self._period_id: int | None = None
         self._period_start: datetime | None = None
         self._state: ActivityState | None = None
+        self._watermark:datetime|None=None
 
     def _state_for(self, snapshot: ActivitySnapshot) -> ActivityState:
         return IDLE_STATE if snapshot.idle_seconds >= self.idle_threshold else snapshot.state
 
     def record_snapshot(self, snapshot: ActivitySnapshot, observed_at: datetime) -> None:
         """Record one snapshot. Kept separate from the loop for deterministic tests."""
+        if self._watermark is not None and observed_at < self._watermark:
+            return
 
         state = self._state_for(snapshot)
         if self._state is None:
@@ -73,21 +76,31 @@ class ActivityTracker:
             transition_at = observed_at - timedelta(seconds=excess_idle)
             if self._period_start is not None:
                 transition_at = max(transition_at, self._period_start)
+            if self._watermark is not None:
+                transition_at=max(transition_at, self._watermark)
 
         self._update_current(transition_at)
         self._start_period(state, transition_at)
-        self._update_current(observed_at)
+        if transition_at != observed_at:
+            self._update_current(observed_at)
+        
 
     def _start_period(self, state: ActivityState, started_at: datetime) -> None:
         self._state = state
         self._period_start = started_at
         self._period_id = self.database.create_period(state, started_at)
+        if self._watermark is None or started_at>self._watermark:
+            self._watermark = started_at
 
     def _update_current(self, ended_at: datetime) -> None:
         if self._period_id is None or self._period_start is None:
             return
+        if self._watermark is not None and ended_at < self._watermark:
+            ended_at = self._watermark
         self.database.update_period(self._period_id, self._period_start, ended_at)
-
+        if self._watermark is None or ended_at > self._watermark:
+            self._watermark = ended_at
+ 
     def run(self) -> None:
         """Poll until ``stop`` is called or Ctrl+C is received."""
 
@@ -109,6 +122,85 @@ class ActivityTracker:
         finally:
             self._update_current(self._now())
             LOGGER.info("Tracker stopped")
+            
+           
 
     def stop(self) -> None:
         self._stop_event.set()
+
+def test_clock_jump_backwards_preserves_confirmed_period_and_avoids_overlap(self) -> None:
+        origin = datetime(2026, 7, 20, 10, 0, 0, tzinfo=timezone.utc)
+        clock = {"value": origin}
+
+        def fake_now() -> datetime:
+            current = clock["value"]
+            clock["value"] = current + timedelta(seconds=1)
+            return current
+
+        tracker = ActivityTracker(
+            database=self.database,
+            provider=self.provider,
+            poll_interval=1.0,
+            idle_threshold=180.0,
+            now=fake_now,
+        )
+
+        app_a = ActivitySnapshot(
+            process_name="code.exe",
+            window_title="Editor",
+            state=ActivityState("active", "code.exe", "Editor"),
+            idle_seconds=0.0,
+        )
+        app_b = ActivitySnapshot(
+            process_name="browser.exe",
+            window_title="Docs",
+            state=ActivityState("active", "browser.exe", "Docs"),
+            idle_seconds=0.0,
+        )
+
+        # 1. Accept initial observations
+        tracker.record_snapshot(app_a, origin)
+        tracker.record_snapshot(app_a, origin + timedelta(seconds=30))
+
+        periods = self.database.list_periods()
+        self.assertEqual(len(periods), 1)
+        self.assertEqual(periods[0].start, origin)
+        self.assertEqual(periods[0].end, origin + timedelta(seconds=30))
+        self.assertEqual(periods[0].duration_seconds, 30)
+
+        # 2. Backwards jump: older observation must be rejected and not regress the end
+        backwards_time = origin + timedelta(seconds=10)
+        tracker.record_snapshot(app_b, backwards_time)
+
+        periods = self.database.list_periods()
+        self.assertEqual(len(periods), 1)
+        self.assertEqual(periods[0].end, origin + timedelta(seconds=30))
+        self.assertEqual(periods[0].duration_seconds, 30)
+
+        # 3. Recovery at/after watermark: transition accepted cleanly without backwards overlap
+        recovery_time = origin + timedelta(seconds=35)
+        tracker.record_snapshot(app_b, recovery_time)
+
+        periods = self.database.list_periods()
+        self.assertEqual(len(periods), 2)
+        self.assertEqual(periods[0].end, origin + timedelta(seconds=30))
+        self.assertEqual(periods[1].start, recovery_time)
+
+        # 4. Finalization on backwards clock preserves end time
+        tracker._period_id = periods[1].id
+        tracker._update_current(backwards_time)
+
+        periods = self.database.list_periods()
+        self.assertEqual(periods[1].end, recovery_time)
+
+
+
+
+
+
+
+
+
+
+
+
