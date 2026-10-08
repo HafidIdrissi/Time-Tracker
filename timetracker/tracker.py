@@ -23,7 +23,12 @@ class ActivityProvider(Protocol):
 
 
 class ActivityTracker:
-    """Track foreground-window changes and explicit idle periods."""
+    """Track foreground-window changes and explicit idle periods.
+    Maintains a confirmed-boundary watermark tracking the latest successfully
+    committed timestamp in the database. Older snapshots on backwards clock
+    jumps are rejected. In partial-write failure cases (e.g., previous period
+    update succeeds but next period creation fails), the watermark preserves
+    the committed end time to prevent regressions while retaining clean recovery."""
 
     def __init__(
         self,
@@ -84,7 +89,6 @@ class ActivityTracker:
         self._start_period(state, transition_at)
         if transition_at != observed_utc:
             self._update_current(observed_utc)
-        self._watermark = observed_utc
         
     def _start_period(self, state: ActivityState, started_at: datetime) -> None:
         started_utc = to_utc(started_at)
@@ -92,12 +96,18 @@ class ActivityTracker:
         self._period_id = period_id
         self._period_start = started_utc
         self._state = state
+        self._advance_watermark(started_utc)
 
     def _update_current(self, ended_at: datetime) -> None:
         if self._period_id is None or self._period_start is None:
             return
         ended_utc = to_utc(ended_at)
         self.database.update_period(self._period_id, self._period_start, ended_utc)
+        self._advance_watermark(ended_utc)
+
+    def _advance_watermark(self, boundary: datetime) -> None:
+        if self._watermark is None or boundary > self._watermark:
+            self._watermark = boundary
  
     def run(self) -> None:
         """Poll until ``stop`` is called or Ctrl+C is received."""
