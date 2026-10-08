@@ -381,6 +381,102 @@ class TrackerTests(unittest.TestCase):
                 # Confirm backwards shutdown preserved 10:00:30 and did not regress to 10:00:10
                 self.assertEqual(periods[0].ended_at, origin + timedelta(seconds=30))
                 self.assertEqual(periods[0].duration_seconds, 30)
+    def test_idle_transition_clamps_to_watermark_without_overlap(self) -> None:
+        origin = datetime(2026, 7, 20, 10, 0, 0, tzinfo=timezone.utc)
+        active = ActivityState("Code.exe", "Editor")
+
+        with tempfile.TemporaryDirectory() as directory:
+            with ActivityDatabase(Path(directory) / "activity.db") as database:
+                tracker = ActivityTracker(database, UnusedProvider())
+
+                # Accept A at 10:00:00 and confirm through 10:00:30
+                tracker.record_snapshot(ActivitySnapshot(active, 0), origin)
+                tracker.record_snapshot(ActivitySnapshot(active, 0), origin + timedelta(seconds=30))
+
+                # At 10:00:35, idle_seconds=200 with default 180s threshold (derived: 10:00:15)
+                # Must clamp to 10:00:30 without overlapping confirmed activity
+                tracker.record_snapshot(ActivitySnapshot(active, 200), origin + timedelta(seconds=35))
+
+                periods = self._periods(database, origin)
+                self.assertEqual(len(periods), 2)
+                self.assertEqual(periods[0].ended_at, origin + timedelta(seconds=30))
+                self.assertEqual(periods[0].duration_seconds, 30)
+                self.assertEqual(periods[1].started_at, origin + timedelta(seconds=30))
+                self.assertEqual(periods[1].ended_at, origin + timedelta(seconds=35))
+                self.assertEqual(periods[1].duration_seconds, 5)
+
+    def test_failed_creation_does_not_publish_inconsistent_state(self) -> None:
+        origin = datetime(2026, 7, 20, 10, 0, 0, tzinfo=timezone.utc)
+        editor = ActivityState("Code.exe", "Editor")
+        browser = ActivityState("firefox.exe", "Documentation")
+
+        with tempfile.TemporaryDirectory() as directory:
+            with ActivityDatabase(Path(directory) / "activity.db") as database:
+                tracker = ActivityTracker(database, UnusedProvider())
+                tracker.record_snapshot(ActivitySnapshot(editor, 0), origin)
+
+                # Simulate a database failure on next create_period
+                orig_create = database.create_period
+                def failing_create(state, started_at):
+                    raise RuntimeError("DB Disk Full")
+                database.create_period = failing_create
+
+                with self.assertRaises(RuntimeError):
+                    tracker.record_snapshot(ActivitySnapshot(browser, 0), origin + timedelta(seconds=10))
+
+                # State must not be partially published to browser
+                self.assertEqual(tracker._state, editor)
+
+                # Restore DB and verify subsequent write recovers cleanly
+                database.create_period = orig_create
+                tracker.record_snapshot(ActivitySnapshot(browser, 0), origin + timedelta(seconds=20))
+                periods = self._periods(database, origin)
+                self.assertEqual(len(periods), 2)
+
+    def test_run_finalization_preserves_period_on_backwards_clock(self) -> None:
+        origin = datetime(2026, 7, 20, 10, 0, 0, tzinfo=timezone.utc)
+        editor = ActivityState("Code.exe", "Editor")
+
+        class StepProvider:
+            def __init__(self, tracker_ref: list) -> None:
+                self.tracker_ref = tracker_ref
+                self.calls = 0
+
+            def sample(self) -> ActivitySnapshot:
+                self.calls += 1
+                if self.calls == 2:
+                    self.tracker_ref[0].stop()
+                return ActivitySnapshot(editor, 0)
+
+        times = [
+            origin,
+            origin + timedelta(seconds=30),
+            origin + timedelta(seconds=10),
+        ]
+
+        def fake_now() -> datetime:
+            if times:
+                return times.pop(0)
+            return origin + timedelta(seconds=10)
+
+        with tempfile.TemporaryDirectory() as directory:
+            with ActivityDatabase(Path(directory) / "activity.db") as database:
+                holder: list = []
+                provider = StepProvider(holder)
+                tracker = ActivityTracker(
+                    database=database,
+                    provider=provider,
+                    poll_interval=0.01,
+                    now=fake_now,
+                )
+                holder.append(tracker)
+                tracker.run()
+
+                periods = self._periods(database, origin)
+                self.assertEqual(len(periods), 1)
+                self.assertEqual(periods[0].started_at, origin)
+                self.assertEqual(periods[0].ended_at, origin + timedelta(seconds=30))
+                self.assertEqual(periods[0].duration_seconds, 30)
 
 if __name__ == "__main__":
     unittest.main()
