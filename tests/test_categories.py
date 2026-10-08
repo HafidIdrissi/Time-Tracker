@@ -235,6 +235,7 @@ class CategorizerTests(unittest.TestCase):
             ("int at 0",      [42],                       0),
             ("string at 0",   ["string"],                 0),
             ("None at 0",     [None],                     0),
+            ("list at 1",     [valid0, []],               1),
             ("int at 1",      [valid0, 42],               1),
             ("None at 2",     [valid0, valid1, None],     2),
         ]
