@@ -76,13 +76,12 @@ class ActivityTracker:
             transition_at = observed_at - timedelta(seconds=excess_idle)
             if self._period_start is not None:
                 transition_at = max(transition_at, self._period_start)
-            if self._watermark is not None:
-                transition_at=max(transition_at, self._watermark)
 
         self._update_current(transition_at)
         self._start_period(state, transition_at)
         if transition_at != observed_at:
             self._update_current(observed_at)
+        self._watermark = observed_at
         
 
     def _start_period(self, state: ActivityState, started_at: datetime) -> None:
