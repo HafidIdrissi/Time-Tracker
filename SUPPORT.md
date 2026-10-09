@@ -120,6 +120,43 @@ missing and whether the interpreter path matches before assuming a toolkit
 issue. See [#209](https://github.com/HafidIdrissi/Time-Tracker/issues/209)
 for additional context on environment-related import failures.
 
+## Dependencies installed into the wrong Python environment
+
+If imports fail after installing packages, the most common cause is a mismatch
+between the interpreter that created the virtual environment and the one used to
+install or run. Diagnose with:
+
+```powershell
+.\.venv\Scripts\python.exe -c "import sys; print(sys.executable, sys.version)"
+.\.venv\Scripts\python.exe -m pip --version
+```
+
+The first command prints the interpreter path and version. The second shows
+which environment `pip` operates on. If either points outside `.venv`, packages
+land in the wrong place.
+
+Install into the correct environment by calling `pip` through the same
+interpreter:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+If the virtual environment was created with an unsupported interpreter, recreate
+it with a supported version (Python 3.11 or later):
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+Not every `ImportError` is a Tk problem. Confirm the interpreter and pip
+environment match before investigating further. See
+[#209](https://github.com/HafidIdrissi/Time-Tracker/issues/209) for additional
+context, and the [Contributing guide](CONTRIBUTING.md#development-setup) for the
+full development setup.
+
 ## Bug reports
 
 Use the
