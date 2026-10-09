@@ -119,12 +119,23 @@ def _render_timeline_chart(
     return "".join(rows)
 
 
-def _table_rows(rows: list[tuple[str, str, float]], empty_columns: int = 3) -> str:
+def _isolated(text: str) -> str:
+    """Escape text and isolate its direction from the surrounding LTR layout."""
+
+    return f'<bdi dir="auto">{escape(text)}</bdi>'
+
+
+def _table_rows(
+    rows: list[tuple[str, str, float]],
+    empty_columns: int = 3,
+    isolate_second: bool = False,
+) -> str:
     if not rows:
         return f'<tr><td colspan="{empty_columns}" class="empty">No activity</td></tr>'
     return "".join(
         "<tr>"
-        f"<td>{escape(first)}</td><td>{escape(second)}</td>"
+        f"<td>{escape(first)}</td>"
+        f"<td>{_isolated(second) if isolate_second else escape(second)}</td>"
         f"<td class=\"duration\">{format_duration(duration)}</td>"
         "</tr>"
         for first, second, duration in rows
@@ -180,7 +191,7 @@ def render_html(
         f"{escape(period.category)}</span></td>"
         f"<td>{escape(period.application)}</td>"
         f"<td class=\"window-title\" title=\"{escape(period.window_title, quote=True)}\">"
-        f"{escape(period.window_title)}</td>"
+        f"{_isolated(period.window_title)}</td>"
         f"<td class=\"duration\">{format_duration(period.duration_seconds)}</td>"
         "</tr>"
         for period in periods
@@ -258,7 +269,7 @@ def render_html(
   </section>
   <div class="grid">
     <section class="panel"><h2>Applications</h2><table><thead><tr><th>Application</th><th>Share</th><th class="duration">Duration</th></tr></thead><tbody>{_table_rows(application_rows)}</tbody></table></section>
-    <section class="panel"><h2>Window titles</h2><table><thead><tr><th>Application</th><th>Full title</th><th class="duration">Duration</th></tr></thead><tbody>{_table_rows(title_rows)}</tbody></table></section>
+    <section class="panel"><h2>Window titles</h2><table><thead><tr><th>Application</th><th>Full title</th><th class="duration">Duration</th></tr></thead><tbody>{_table_rows(title_rows, isolate_second=True)}</tbody></table></section>
   </div>
   <section class="panel timeline-table"><h2>Detailed timeline</h2><table>
     <thead><tr><th>Start</th><th>End</th><th>Category</th><th>Application</th><th>Window</th><th class="duration">Duration</th></tr></thead>

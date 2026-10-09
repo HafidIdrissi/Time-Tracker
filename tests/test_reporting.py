@@ -2,9 +2,55 @@ from __future__ import annotations
 
 import unittest
 from datetime import date, datetime, timedelta, timezone
+from html.parser import HTMLParser
 
 from timetracker import __version__
 from timetracker.reporting import ReportPeriod, format_duration, render_html
+
+
+class _TableCellParser(HTMLParser):
+    """Collect each table cell's text, attributes and isolated (<bdi>) text by section."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.cells: dict[str, list[list[dict]]] = {}
+        self._section = ""
+        self._in_h2 = False
+        self._row: list[dict] | None = None
+        self._cell: dict | None = None
+        self._bdi: dict | None = None
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag == "h2":
+            self._in_h2 = True
+            self._section = ""
+        elif tag == "tr":
+            self._row = []
+        elif tag == "td" and self._row is not None:
+            self._cell = {"attrs": dict(attrs), "text": "", "bdi": []}
+        elif tag == "bdi" and self._cell is not None:
+            self._bdi = {"attrs": dict(attrs), "text": ""}
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "h2":
+            self._in_h2 = False
+        elif tag == "bdi" and self._cell is not None and self._bdi is not None:
+            self._cell["bdi"].append(self._bdi)
+            self._bdi = None
+        elif tag == "td" and self._row is not None and self._cell is not None:
+            self._row.append(self._cell)
+            self._cell = None
+        elif tag == "tr" and self._row:
+            self.cells.setdefault(self._section, []).append(self._row)
+            self._row = None
+
+    def handle_data(self, data: str) -> None:
+        if self._in_h2:
+            self._section += data
+        if self._cell is not None:
+            self._cell["text"] += data
+        if self._bdi is not None:
+            self._bdi["text"] += data
 
 
 class ReportingTests(unittest.TestCase):
@@ -73,6 +119,67 @@ class ReportingTests(unittest.TestCase):
         self.assertNotIn("<script", html)
         self.assertNotIn("<link", html)
         self.assertNotIn("url(", html)
+
+    def test_window_titles_are_direction_isolated_without_changing_text(self) -> None:
+        # Fictional mixed-direction titles; no real activity data.
+        titles = [
+            "تقرير المبيعات - Q3 report.xlsx",
+            "מסמך 2026 v2.docx",
+            "Plain English notes.txt",
+            "",
+            'Notes & <draft> "v1" > old',
+        ]
+        start = datetime(2026, 7, 20, 9, 0, tzinfo=timezone.utc).astimezone()
+        periods = [
+            ReportPeriod(
+                application="editor.exe",
+                window_title=title,
+                started_at=start + timedelta(minutes=10 * index),
+                ended_at=start + timedelta(minutes=10 * index + 5),
+                duration_seconds=300 + index,
+                is_idle=False,
+                category="Work",
+                color="#4f46e5",
+            )
+            for index, title in enumerate(titles)
+        ]
+        html = render_html(periods, date(2026, 7, 20), date(2026, 7, 20))
+        parser = _TableCellParser()
+        parser.feed(html)
+
+        # Window titles table: only the title cell is isolated, text unchanged.
+        title_rows = parser.cells["Window titles"]
+        self.assertCountEqual([row[1]["text"] for row in title_rows], titles)
+        for application_cell, title_cell, duration_cell in title_rows:
+            self.assertEqual(
+                title_cell["bdi"], [{"attrs": {"dir": "auto"}, "text": title_cell["text"]}]
+            )
+            self.assertEqual(application_cell["bdi"], [])
+            self.assertEqual(duration_cell["bdi"], [])
+
+        # Detailed timeline: the window cell is isolated; its hover title is untouched.
+        timeline_rows = parser.cells["Detailed timeline"]
+        self.assertEqual([row[4]["text"] for row in timeline_rows], titles)
+        for row in timeline_rows:
+            window_cell = row[4]
+            self.assertEqual(
+                window_cell["bdi"], [{"attrs": {"dir": "auto"}, "text": window_cell["text"]}]
+            )
+            self.assertEqual(window_cell["attrs"]["title"], window_cell["text"])
+            self.assertEqual([cell for cell in row if cell["bdi"]], [window_cell])
+
+        # Applications table (and its share column) is not touched.
+        for row in parser.cells["Applications"]:
+            self.assertTrue(all(cell["bdi"] == [] for cell in row))
+
+        # Empty titles get an empty wrapper, not a placeholder.
+        self.assertIn('<bdi dir="auto"></bdi>', html)
+
+        # HTML-sensitive characters stay text inside the isolation element.
+        self.assertIn(
+            '<bdi dir="auto">Notes &amp; &lt;draft&gt; &quot;v1&quot; &gt; old</bdi>', html
+        )
+        self.assertNotIn("<draft>", html)
 
 
 if __name__ == "__main__":
