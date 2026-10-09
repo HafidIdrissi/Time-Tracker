@@ -334,53 +334,107 @@ class TrackerTests(unittest.TestCase):
                 self.assertEqual(periods_recovered[0].duration_seconds, 35)
                 self.assertEqual(periods_recovered[1].started_at, origin + timedelta(seconds=35))
                 self.assertEqual(periods_recovered[1].application, "firefox.exe")
-
-    def test_run_finalization_preserves_period_on_backwards_clock(self) -> None:
+    def test_failed_creation_preserves_committed_boundary_and_watermark(self) -> None:
         origin = datetime(2026, 7, 20, 10, 0, 0, tzinfo=timezone.utc)
-        editor = ActivityState("Code.exe", "Editor")
-
-        class StepProvider:
-            def __init__(self, tracker_ref: list) -> None:
-                self.tracker_ref = tracker_ref
-                self.calls = 0
-
-            def sample(self) -> ActivitySnapshot:
-                self.calls += 1
-                if self.calls == 2:
-                    self.tracker_ref[0].stop()
-                return ActivitySnapshot(editor, 0)
-
-        # Clock steps: 10:00:00 (start), 10:00:30 (sample 2), then jumps backward to 10:00:10 at stop
-        times = [
-            origin,
-            origin + timedelta(seconds=30),
-            origin + timedelta(seconds=10),
-        ]
-
-        def fake_now() -> datetime:
-            if times:
-                return times.pop(0)
-            return origin + timedelta(seconds=10)
+        state_a = ActivityState("Code.exe", "Editor")
+        state_b = ActivityState("firefox.exe", "Documentation")
 
         with tempfile.TemporaryDirectory() as directory:
             with ActivityDatabase(Path(directory) / "activity.db") as database:
-                holder: list = []
-                provider = StepProvider(holder)
-                tracker = ActivityTracker(
-                    database=database,
-                    provider=provider,
-                    poll_interval=0.01,
-                    now=fake_now,
-                )
-                holder.append(tracker)
-                tracker.run()
+                tracker = ActivityTracker(database, UnusedProvider())
 
+                # 1. Accept A at 10:00:00, confirm through 10:00:30
+                tracker.record_snapshot(ActivitySnapshot(state_a, 0), origin)
+                tracker.record_snapshot(ActivitySnapshot(state_a, 0), origin + timedelta(seconds=30))
+
+                # 2. Observe B at 10:00:35, injecting create_period failure.
+                # A's update commits end=10:00:35, watermark must advance to 10:00:35.
+                orig_create = database.create_period
+                def failing_create(state, started_at):
+                    raise RuntimeError("DB Disk Full")
+                database.create_period = failing_create
+
+                with self.assertRaises(RuntimeError):
+                    tracker.record_snapshot(ActivitySnapshot(state_b, 0), origin + timedelta(seconds=35))
+
+                self.assertEqual(tracker._state, state_a)
+                self.assertEqual(tracker._watermark, origin + timedelta(seconds=35))
                 periods = self._periods(database, origin)
                 self.assertEqual(len(periods), 1)
-                self.assertEqual(periods[0].started_at, origin)
-                # Confirm backwards shutdown preserved 10:00:30 and did not regress to 10:00:10
-                self.assertEqual(periods[0].ended_at, origin + timedelta(seconds=30))
-                self.assertEqual(periods[0].duration_seconds, 30)
+                self.assertEqual(periods[0].ended_at, origin + timedelta(seconds=35))
+                self.assertEqual(periods[0].duration_seconds, 35)
+
+                # 3. Older active/idle observations at 10:00:32 must be rejected by advanced watermark
+                tracker.record_snapshot(ActivitySnapshot(state_a, 0), origin + timedelta(seconds=32))
+                tracker.record_snapshot(ActivitySnapshot(state_a, 200), origin + timedelta(seconds=32))
+                periods = self._periods(database, origin)
+                self.assertEqual(len(periods), 1)
+                self.assertEqual(periods[0].ended_at, origin + timedelta(seconds=35))
+                self.assertEqual(periods[0].duration_seconds, 35)
+
+                # Backwards run() stop at 10:00:32 must preserve the committed 10:00:35 end
+                tracker._now = lambda: origin + timedelta(seconds=32)
+                tracker.stop()
+                tracker.run()
+                periods = self._periods(database, origin)
+                self.assertEqual(periods[0].ended_at, origin + timedelta(seconds=35))
+                self.assertEqual(periods[0].duration_seconds, 35)
+
+                # 4. Recover on subsequent B retry at 10:00:40
+                database.create_period = orig_create
+                tracker.record_snapshot(ActivitySnapshot(state_b, 0), origin + timedelta(seconds=40))
+                periods = self._periods(database, origin)
+                self.assertEqual(len(periods), 2)
+                self.assertEqual(periods[0].ended_at, origin + timedelta(seconds=40))
+                self.assertEqual(periods[0].duration_seconds, 40)
+                self.assertEqual(periods[1].started_at, origin + timedelta(seconds=40))
+
+    def test_initial_create_and_update_failure_controls(self) -> None:
+        origin = datetime(2026, 7, 20, 10, 0, 0, tzinfo=timezone.utc)
+        state_a = ActivityState("Code.exe", "Editor")
+
+        with tempfile.TemporaryDirectory() as directory:
+            with ActivityDatabase(Path(directory) / "activity.db") as database:
+                tracker = ActivityTracker(database, UnusedProvider())
+
+                # Initial create failure: watermark and state must remain unset
+                orig_create = database.create_period
+                def failing_create(state, started_at):
+                    raise RuntimeError("Init Create Failed")
+                database.create_period = failing_create
+
+                with self.assertRaises(RuntimeError):
+                    tracker.record_snapshot(ActivitySnapshot(state_a, 0), origin)
+
+                self.assertIsNone(tracker._state)
+                self.assertIsNone(tracker._watermark)
+                self.assertEqual(len(self._periods(database, origin)), 0)
+
+                # Recover initial creation
+                database.create_period = orig_create
+                tracker.record_snapshot(ActivitySnapshot(state_a, 0), origin)
+                self.assertEqual(tracker._state, state_a)
+                self.assertEqual(tracker._watermark, origin)
+
+                # Update failure: watermark and committed end remain unchanged
+                orig_update = database.update_period
+                def failing_update(period_id, started_at, ended_at):
+                    raise RuntimeError("Update Failed")
+                database.update_period = failing_update
+
+                with self.assertRaises(RuntimeError):
+                    tracker.record_snapshot(ActivitySnapshot(state_a, 0), origin + timedelta(seconds=10))
+
+                self.assertEqual(tracker._watermark, origin)
+
+                # Restore update and observe recovery
+                database.update_period = orig_update
+                tracker.record_snapshot(ActivitySnapshot(state_a, 0), origin + timedelta(seconds=20))
+                self.assertEqual(tracker._watermark, origin + timedelta(seconds=20))
+                periods = self._periods(database, origin)
+                self.assertEqual(len(periods), 1)
+                self.assertEqual(periods[0].ended_at, origin + timedelta(seconds=20))
+                
     def test_idle_transition_clamps_to_watermark_without_overlap(self) -> None:
         origin = datetime(2026, 7, 20, 10, 0, 0, tzinfo=timezone.utc)
         active = ActivityState("Code.exe", "Editor")
@@ -407,31 +461,43 @@ class TrackerTests(unittest.TestCase):
 
     def test_failed_creation_does_not_publish_inconsistent_state(self) -> None:
         origin = datetime(2026, 7, 20, 10, 0, 0, tzinfo=timezone.utc)
-        editor = ActivityState("Code.exe", "Editor")
-        browser = ActivityState("firefox.exe", "Documentation")
+        state_a = ActivityState("Code.exe", "Editor")
+        state_b = ActivityState("firefox.exe", "Documentation")
 
         with tempfile.TemporaryDirectory() as directory:
             with ActivityDatabase(Path(directory) / "activity.db") as database:
                 tracker = ActivityTracker(database, UnusedProvider())
-                tracker.record_snapshot(ActivitySnapshot(editor, 0), origin)
-
-                # Simulate a database failure on next create_period
+                tracker.record_snapshot(ActivitySnapshot(state_a,0), origin)
+                tracker.record_snapshot(ActivitySnapshot(state_a,0), origin + timedelta(seconds=30))
                 orig_create = database.create_period
                 def failing_create(state, started_at):
                     raise RuntimeError("DB Disk Full")
                 database.create_period = failing_create
 
                 with self.assertRaises(RuntimeError):
-                    tracker.record_snapshot(ActivitySnapshot(browser, 0), origin + timedelta(seconds=10))
+                    tracker.record_snapshot(ActivitySnapshot(state_b, 0), origin + timedelta(seconds=35))
 
-                # State must not be partially published to browser
-                self.assertEqual(tracker._state, editor)
+                self.assertEqual(tracker._state, state_a)
+                periods = self._periods(database, origin)
+                self.assertEqual(len(periods), 1)
+                self.assertEqual(periods[0].ended_at, origin + timedelta(seconds=35))
+                self.assertEqual(periods[0].duration_seconds, 35)
 
-                # Restore DB and verify subsequent write recovers cleanly
+                # 3. Older snapshot at 10:00:32 must be rejected by advanced watermark
+                tracker.record_snapshot(ActivitySnapshot(state_a, 0), origin + timedelta(seconds=32))
+                periods = self._periods(database, origin)
+                self.assertEqual(periods[0].ended_at, origin + timedelta(seconds=35))
+                self.assertEqual(periods[0].duration_seconds, 35)
+
+                # 4. Recover on subsequent B at 10:00:40
                 database.create_period = orig_create
-                tracker.record_snapshot(ActivitySnapshot(browser, 0), origin + timedelta(seconds=20))
+                tracker.record_snapshot(ActivitySnapshot(state_b, 0), origin + timedelta(seconds=40))
                 periods = self._periods(database, origin)
                 self.assertEqual(len(periods), 2)
+                self.assertEqual(periods[0].ended_at, origin + timedelta(seconds=40))
+                self.assertEqual(periods[1].started_at, origin + timedelta(seconds=40))
+
+
 
     def test_run_finalization_preserves_period_on_backwards_clock(self) -> None:
         origin = datetime(2026, 7, 20, 10, 0, 0, tzinfo=timezone.utc)
