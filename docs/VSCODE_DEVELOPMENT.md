@@ -52,7 +52,7 @@ VS Code stores these test discovery settings in `.vscode/settings.json`. The rep
 
 Once discovery is configured:
 
-1. Open the **Testing** panel on the Activity Bar (flask icon or `Ctrl+Shift+D` / Testing view).
+1. Open the **Testing** panel by clicking the beaker icon on the Activity Bar, or open the Command Palette (`Ctrl+Shift+P`) and run **Testing: Focus on Test Explorer View**.
 2. Expand the test tree: `tests` > `test_usage_range.py` > `UsageRangeTests`.
 3. Locate `test_previous_seven_days_do_not_overlap_last_seven_days`.
 4. Click the **Run Test** icon (play button) next to the test, or right-click and choose **Run Test** / **Debug Test**.
