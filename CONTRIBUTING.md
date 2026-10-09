@@ -101,6 +101,8 @@ Run all tests from the repository root:
 ```
 
 Use that same `python.exe` for every test command in this repository.
+To configure test discovery and run tests directly in VS Code, see
+[docs/VSCODE_DEVELOPMENT.md](docs/VSCODE_DEVELOPMENT.md).
 
 For interface changes, also verify that tracking starts, foreground titles
 update, Usage analysis loads, an offline report can be generated, and tracking
