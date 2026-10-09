@@ -157,6 +157,41 @@ environment match before investigating further. See
 context, and the [Contributing guide](CONTRIBUTING.md#development-setup) for the
 full development setup.
 
+## Dependencies installed into the wrong Python environment
+
+If `import` errors appear after installing packages, the project interpreter may
+differ from the one `pip` used. Confirm the active interpreter and its `pip`:
+
+```powershell
+.\.venv\Scripts\python.exe -c "import sys; print(sys.executable, sys.version)"
+.\.venv\Scripts\python.exe -m pip --version
+```
+
+The first command prints the full path and version of the interpreter inside the
+virtual environment. The second shows which environment `pip` is operating in.
+If either path points outside `.venv\Scripts\`, packages are being installed
+into a different Python and will not be importable by the project.
+
+Install dependencies with the same interpreter so they land in the correct
+environment:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+If the virtual environment was created with an unsupported interpreter, recreate
+it with a supported version (Python 3.11 or later):
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+Not every `ModuleNotFoundError` is a Tk or system library problem — check the
+interpreter path first. See [#209](https://github.com/HafidIdrissi/Time-Tracker/issues/209)
+for additional context.
+
 ## Bug reports
 
 Use the
