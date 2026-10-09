@@ -4,6 +4,7 @@ import csv
 import json
 import tempfile
 import unittest
+from dataclasses import replace
 from unittest import mock
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -19,7 +20,7 @@ class ExportTests(unittest.TestCase):
         start = datetime(2026, 1, 15, 9, 0, tzinfo=timezone(timedelta(hours=1)))
         with ActivityDatabase(path) as database:
             period_id = database.create_period(
-                ActivityState("notes.exe", 'Hello, "world"\nnext'), start
+                ActivityState("notes.exe", 'Hello, "world"\nnext — café'), start
             )
             database.update_period(period_id, start, start + timedelta(minutes=5))
             idle_id = database.create_period(
@@ -57,11 +58,75 @@ class ExportTests(unittest.TestCase):
             self.assertIn("+", rows[0]["started_at"])
             self.assertEqual(rows[1]["is_idle"], "True")
 
-            payload = json.loads(json_path.read_text(encoding="utf-8"))
-            self.assertEqual(payload[0]["window_title"], 'Hello, "world"\nnext')
+            def reject_non_finite(value: str) -> None:
+                raise ValueError(f"Invalid JSON constant: {value}")
+
+            json_text = json_path.read_text(encoding="utf-8")
+            payload = json.loads(
+                json_text,
+                parse_constant=reject_non_finite,
+            )
+            self.assertEqual(list(payload[0]), list(EXPORT_FIELDS))
+            self.assertEqual(
+                [row["application"] for row in payload],
+                ["notes.exe", "Idle"],
+            )
+            self.assertEqual(
+                [row["duration_seconds"] for row in payload],
+                [300.0, 60.0],
+            )
+            self.assertIsInstance(payload[0]["application"], str)
+            self.assertIsInstance(payload[0]["window_title"], str)
+            self.assertIsInstance(payload[0]["started_at"], str)
+            self.assertIsInstance(payload[0]["ended_at"], str)
+            self.assertIsInstance(payload[0]["duration_seconds"], float)
+            self.assertIsInstance(payload[0]["is_idle"], bool)
+            self.assertEqual(payload[0]["window_title"], 'Hello, "world"\nnext — café')
+            self.assertIn("café", json_text)
             self.assertTrue(payload[1]["is_idle"])
             self.assertIn("+", payload[0]["ended_at"])
             self.assertEqual(snapshot(), before)
+
+    def test_json_rejects_non_finite_durations_atomically(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = self._database(root)
+            with ActivityDatabase(source) as database:
+                source_rows = database.all_periods()
+            original_destination = "keep existing export"
+            destination = root / "out.json"
+            unrelated_sibling = root / ".out.json.keep.tmp"
+            unrelated_sibling.write_bytes(b"keep this unrelated temporary-pattern sibling")
+
+            for duration in (float("inf"), float("-inf"), float("nan")):
+                with self.subTest(duration=duration):
+                    destination.write_text(original_destination, encoding="utf-8")
+                    invalid_period = replace(
+                        source_rows[0],
+                        duration_seconds=duration,
+                    )
+                    temporary_files_before = set(root.glob(".out.json.*.tmp"))
+
+                    with mock.patch.object(
+                        ActivityDatabase,
+                        "all_periods",
+                        return_value=[invalid_period],
+                    ):
+                        with self.assertRaisesRegex(ValueError, "finite.*duration_seconds"):
+                            export_activity(source, destination, "json")
+
+                    temporary_files_after = set(root.glob(".out.json.*.tmp"))
+                    self.assertEqual(
+                        destination.read_text(encoding="utf-8"),
+                        original_destination,
+                    )
+                    self.assertEqual(temporary_files_after, temporary_files_before)
+                    self.assertEqual(
+                        unrelated_sibling.read_bytes(),
+                        b"keep this unrelated temporary-pattern sibling",
+                    )
+                    with ActivityDatabase(source) as database:
+                        self.assertEqual(database.all_periods(), source_rows)
 
     def test_empty_database_and_failed_export_leave_no_partial_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
