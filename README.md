@@ -181,6 +181,43 @@ analysis view; it does not start, stop, or modify tracking.
 Browser titles such as `Gmail - Google Chrome` are normalized to `Gmail`, so
 separate visits to the same tab are added together.
 
+#### Longest active session
+
+**Longest session** is the span of the joined active observations, not the
+total active time recorded inside that span. Active time is the sum of the
+recorded active periods. A gap of **30 seconds or less** can join active
+observations; a gap of **more than 30 seconds** starts a new session. An idle
+period also ends the current active session.
+
+For example, consider this fictional UTC timeline:
+
+| Time | Observation | Effect |
+| --- | --- | --- |
+| 09:00:00–09:01:00 | `Code.exe` | 60 seconds active |
+| 09:01:00–09:02:00 | Chrome | 60 seconds active; switching applications does not end the session |
+| 09:02:30–09:03:30 | Edge | starts exactly 30 seconds after the previous period, so it joins the session |
+| 09:04:01–09:05:01 | `Code.exe` | starts 31 seconds after the previous active period, so it starts a new session |
+| 09:05:01–09:06:01 | Idle | ends the active session |
+| 09:06:01–09:07:01 | `Code.exe` | starts another active session after idle |
+
+The first three active observations contain **180 seconds of active time**, but
+their joined session runs from 09:00:00 to 09:03:30, so the **session span is
+210 seconds (3 minutes 30 seconds)**. The 30-second gap is inside that span and
+is not counted as active time. The 31-second gap starts a separate session, and
+the idle period ends that session as well. Across the whole example, recorded
+active time is **300 seconds (5 minutes)**, while the longest session remains
+**210 seconds**.
+
+The metric describes joined foreground observations. It does **not** establish
+continuous use of one application, uninterrupted attention, or what the user
+was actually doing during a recorded active period.
+
+For the related distinction between active, idle and stopped time, see
+[the active/idle/stopped guidance](https://github.com/HafidIdrissi/Time-Tracker/issues/157).
+For sampling precision and short visits, see
+[the sampling guidance](https://github.com/HafidIdrissi/Time-Tracker/issues/211).
+
+
 ### Reports and data
 
 - generate an offline HTML report for a selected date;
