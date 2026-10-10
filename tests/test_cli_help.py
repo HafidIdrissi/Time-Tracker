@@ -36,7 +36,10 @@ class TestCleanHelpExecution(unittest.TestCase):
                 
         self.assertEqual(raised.exception.code, 0)
         self.assertEqual(stderr.getvalue(), "")
-        self.assertIn("usage", stdout.getvalue().lower())
+        output = stdout.getvalue().lower()
+        self.assertIn("usage", output)
+        self.assertIn("--database", output)
+        self.assertIn("--interval", output)
         
         provider.assert_not_called()
         database.assert_not_called()
@@ -58,7 +61,12 @@ class TestCleanHelpExecution(unittest.TestCase):
                 
         self.assertEqual(raised.exception.code, 0)
         self.assertEqual(stderr.getvalue(), "")
-        self.assertIn("usage", stdout.getvalue().lower())
+        output = stdout.getvalue().lower()
+        self.assertIn("usage", output)
+        self.assertIn("--date", output)
+        self.assertIn("--from", output)
+        self.assertIn("--to", output)
+        self.assertIn("--output", output)
         
         load_cat.assert_not_called()
         gen_rep.assert_not_called()
