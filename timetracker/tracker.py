@@ -7,8 +7,7 @@ import math
 import threading
 from datetime import datetime, timedelta
 from typing import Callable, Protocol
-
-from .database import ActivityDatabase
+from timetracker.database import ActivityDatabase, to_utc
 from .models import ActivitySnapshot, ActivityState
 
 LOGGER = logging.getLogger(__name__)
@@ -19,13 +18,17 @@ IDLE_STATE = ActivityState(
     is_idle=True,
 )
 
-
 class ActivityProvider(Protocol):
     def sample(self) -> ActivitySnapshot: ...
 
 
 class ActivityTracker:
-    """Track foreground-window changes and explicit idle periods."""
+    """Track foreground-window changes and explicit idle periods.
+    Maintains a confirmed-boundary watermark tracking the latest successfully
+    committed timestamp in the database. Older snapshots on backwards clock
+    jumps are rejected. In partial-write failure cases (e.g., previous period
+    update succeeds but next period creation fails), the watermark preserves
+    the committed end time to prevent regressions while retaining clean recovery."""
 
     def __init__(
         self,
@@ -49,45 +52,63 @@ class ActivityTracker:
         self._period_id: int | None = None
         self._period_start: datetime | None = None
         self._state: ActivityState | None = None
+        self._watermark:datetime|None=None
 
     def _state_for(self, snapshot: ActivitySnapshot) -> ActivityState:
         return IDLE_STATE if snapshot.idle_seconds >= self.idle_threshold else snapshot.state
 
     def record_snapshot(self, snapshot: ActivitySnapshot, observed_at: datetime) -> None:
         """Record one snapshot. Kept separate from the loop for deterministic tests."""
+        observed_utc=to_utc(observed_at)
+        if self._watermark is not None and observed_utc < self._watermark:
+            return
 
         state = self._state_for(snapshot)
         if self._state is None:
-            self._start_period(state, observed_at)
+            self._start_period(state, observed_utc)
+            self._watermark = observed_utc
             return
 
         if state == self._state:
-            self._update_current(observed_at)
+            self._update_current(observed_utc)
+            self._watermark = observed_utc
             return
 
-        transition_at = observed_at
+        transition_at = observed_utc
         if state.is_idle and not self._state.is_idle:
             # Attribute only the time beyond the threshold to inactivity, despite
             # the polling interval discovering the transition a few seconds late.
             excess_idle = max(0.0, snapshot.idle_seconds - self.idle_threshold)
-            transition_at = observed_at - timedelta(seconds=excess_idle)
+            transition_at = observed_utc - timedelta(seconds=excess_idle)
             if self._period_start is not None:
                 transition_at = max(transition_at, self._period_start)
+            if self._watermark is not None and transition_at < self._watermark:
+                transition_at = self._watermark
 
         self._update_current(transition_at)
         self._start_period(state, transition_at)
-        self._update_current(observed_at)
-
+        if transition_at != observed_utc:
+            self._update_current(observed_utc)
+        
     def _start_period(self, state: ActivityState, started_at: datetime) -> None:
+        started_utc = to_utc(started_at)
+        period_id = self.database.create_period(state, started_utc)
+        self._period_id = period_id
+        self._period_start = started_utc
         self._state = state
-        self._period_start = started_at
-        self._period_id = self.database.create_period(state, started_at)
+        self._advance_watermark(started_utc)
 
     def _update_current(self, ended_at: datetime) -> None:
         if self._period_id is None or self._period_start is None:
             return
-        self.database.update_period(self._period_id, self._period_start, ended_at)
+        ended_utc = to_utc(ended_at)
+        self.database.update_period(self._period_id, self._period_start, ended_utc)
+        self._advance_watermark(ended_utc)
 
+    def _advance_watermark(self, boundary: datetime) -> None:
+        if self._watermark is None or boundary > self._watermark:
+            self._watermark = boundary
+ 
     def run(self) -> None:
         """Poll until ``stop`` is called or Ctrl+C is received."""
 
@@ -107,8 +128,14 @@ class ActivityTracker:
                     LOGGER.exception("Unable to read the active window")
                 self._stop_event.wait(self.poll_interval)
         finally:
-            self._update_current(self._now())
+            stop_at = self._now()
+            if self._watermark is not None and stop_at < self._watermark:
+                stop_at = self._watermark
+            self._update_current(stop_at)
             LOGGER.info("Tracker stopped")
+            
+           
 
     def stop(self) -> None:
         self._stop_event.set()
+
