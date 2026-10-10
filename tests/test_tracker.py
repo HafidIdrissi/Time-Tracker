@@ -401,12 +401,18 @@ class TrackerTests(unittest.TestCase):
                 self.assertEqual(recovered_rows[0].started_at, origin)
                 self.assertEqual(recovered_rows[0].ended_at, origin + timedelta(seconds=40))
                 self.assertEqual(recovered_rows[0].duration_seconds, 40)
+                self.assertEqual(recovered_rows[0].application, state_a.application)
+                self.assertEqual(recovered_rows[0].window_title, state_a.window_title)
+                self.assertFalse(recovered_rows[0].is_idle)
 
                 # Row B created with new id, start=end=10:00:40, and zero initial duration
                 self.assertNotEqual(recovered_rows[1].id, row_a_id)
                 self.assertEqual(recovered_rows[1].started_at, origin + timedelta(seconds=40))
                 self.assertEqual(recovered_rows[1].ended_at, origin + timedelta(seconds=40))
                 self.assertEqual(recovered_rows[1].duration_seconds, 0)
+                self.assertEqual(recovered_rows[1].application, state_b.application)
+                self.assertEqual(recovered_rows[1].window_title, state_b.window_title)
+                self.assertFalse(recovered_rows[1].is_idle)
 
     def test_initial_create_and_update_failure_controls(self) -> None:
         origin = datetime(2026, 7, 20, 10, 0, 0, tzinfo=timezone.utc)
@@ -453,7 +459,7 @@ class TrackerTests(unittest.TestCase):
 
                 self.assertEqual(tracker._watermark, origin)
                 post_fail_rows = database.all_periods()
-                self.assertEqual(len(post_fail_rows), 1)
+                self.assertEqual(post_fail_rows, init_rows)
                 self.assertEqual(post_fail_rows[0].id, row_id)
                 self.assertEqual(post_fail_rows[0].started_at, origin)
                 self.assertEqual(post_fail_rows[0].ended_at, origin)
@@ -470,6 +476,9 @@ class TrackerTests(unittest.TestCase):
                 self.assertEqual(recovered[0].started_at, origin)
                 self.assertEqual(recovered[0].ended_at, origin + timedelta(seconds=20))
                 self.assertEqual(recovered[0].duration_seconds, 20)
+                self.assertEqual(recovered[0].application, state_a.application)
+                self.assertEqual(recovered[0].window_title, state_a.window_title)
+                self.assertFalse(recovered[0].is_idle)
 
         
                 
