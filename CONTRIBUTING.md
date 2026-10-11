@@ -122,6 +122,9 @@ installer or uninstaller.
 For the path from a Windows sample to the database, dashboard, and offline
 report, read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
+Before cleaning a checkout, read the guide to
+[preserving local data](docs/LOCAL_CHECKOUT_DATA.md).
+
 ## Project principles
 
 Contributions should preserve the project's core promises:
