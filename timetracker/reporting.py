@@ -100,7 +100,7 @@ def _render_timeline_chart(
             left = 100 * (segment_start - day_start).total_seconds() / day_seconds
             width = 100 * (segment_end - segment_start).total_seconds() / day_seconds
             tooltip = escape(
-                f"{segment_start:%H:%M}–{segment_end:%H:%M} · "
+                f"{segment_start:%H:%M:%S}–{segment_end:%H:%M:%S} · "
                 f"{period.application} · {period.window_title}",
                 quote=True,
             )
