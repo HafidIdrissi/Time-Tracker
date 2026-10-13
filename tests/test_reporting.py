@@ -53,6 +53,21 @@ class _TableCellParser(HTMLParser):
             self._bdi["text"] += data
 
 
+class _SegmentTimelineParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.titles = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag != "span":
+            return
+
+        attributes = dict(attrs)
+
+        if attributes.get("class") == "segment":
+            self.titles.append(attributes["title"])
+
+
 class ReportingTests(unittest.TestCase):
     def test_duration_formatting(self) -> None:
         self.assertEqual(format_duration(0), "0 min")
@@ -180,6 +195,47 @@ class ReportingTests(unittest.TestCase):
             '<bdi dir="auto">Notes &amp; &lt;draft&gt; &quot;v1&quot; &gt; old</bdi>', html
         )
         self.assertNotIn("<draft>", html)
+
+    def test_timeline_tooltip_includes_seconds(self):
+        short_start = datetime(2026, 10, 7, 12, 29, 39, tzinfo=timezone.utc).astimezone()
+        short_period = ReportPeriod (
+            application="python.exe",
+            window_title='Python Debug:Console & <test> "script.py" > output=true',
+            started_at=short_start,
+            ended_at=short_start + timedelta(seconds=10),
+            duration_seconds=10,
+            is_idle=False,
+            category="",
+            color="#f5f830",
+        )
+
+        long_start = datetime(2026, 10, 7, 12, 30, 39, tzinfo=timezone.utc).astimezone()
+        long_period = ReportPeriod (
+            application="steamwebhelper.exe",
+            window_title='Mock Steam &amp; &lt;draft&gt; &quot;v1&quot; &gt; old',
+            started_at=long_start,
+            ended_at=long_start + timedelta(minutes=45, seconds=30),
+            duration_seconds=2730,
+            is_idle=False,
+            category="",
+            color="#2293fc",
+        )
+
+        html = render_html([short_period, long_period], short_start.date(), short_start.date())
+        parser = _SegmentTimelineParser()
+        parser.feed(html)
+
+        # Application title remains unchanged, start and end seconds in report match HTML on shorter app lifecycle
+        self.assertEqual(
+            parser.titles[0],
+            f"{short_start:%H:%M:%S}–{short_start + timedelta(seconds=10):%H:%M:%S}"' · python.exe · Python Debug:Console & <test> "script.py" > output=true'
+        )
+
+        # Application title remains unchanged, start and end seconds in report match HTML on longer app lifecycle
+        self.assertEqual(
+            parser.titles[1],
+            f"{long_start:%H:%M:%S}–{long_start + timedelta(minutes=45, seconds=30):%H:%M:%S}"' · steamwebhelper.exe · Mock Steam &amp; &lt;draft&gt; &quot;v1&quot; &gt; old'
+        )
 
 
 if __name__ == "__main__":
