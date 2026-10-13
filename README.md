@@ -374,6 +374,18 @@ python report.py --from 2026-07-14 --to 2026-07-20
 python report.py --version
 ```
 
+Explicit `--database`, `--config` and `--output` paths support the `~` home-directory
+shortcut, including when it is quoted and the shell leaves it unexpanded:
+
+```powershell
+python report.py --database "~/Time Tracker/activity.db" --config "~/Time Tracker/config.json" --output "~/Time Tracker/report.html"
+```
+
+The command expands `~` itself. It does not expand environment variables such as
+`$HOME` or `%USERPROFILE%`; any expansion performed by your shell happens before
+the command receives the argument. Ordinary relative/absolute paths and default
+locations remain unchanged.
+
 Reports contain active and idle totals, categories, a timeline overview,
 application shares, window titles, and every recorded period. They contain no
 external scripts, fonts, trackers, or network dependencies.
