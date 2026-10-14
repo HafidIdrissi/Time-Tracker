@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <title>Local Time Tracker application icon</title>
+  <desc>A clock on a dark navy background with a teal activity indicator.</desc>
+  <rect x="8" y="8" width="240" height="240" rx="52" fill="#172B4D"/>
+  <circle cx="128" cy="128" r="76" fill="#F7FAFC"/>
+  <circle cx="128" cy="128" r="62" fill="#E7EEF7"/>
+  <g fill="#172B4D">
+    <rect x="124" y="76" width="8" height="15" rx="4"/>
+    <rect x="124" y="165" width="8" height="15" rx="4"/>
+    <rect x="76" y="124" width="15" height="8" rx="4"/>
+    <rect x="165" y="124" width="15" height="8" rx="4"/>
+  </g>
+  <path d="M128 96 V130 L151 145" fill="none" stroke="#172B4D" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="128" cy="130" r="7" fill="#12B8A6"/>
+  <circle cx="187" cy="187" r="28" fill="#12B8A6" stroke="#172B4D" stroke-width="7"/>
+  <path d="M174 187 L183 196 L201 177" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
