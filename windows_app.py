@@ -19,6 +19,7 @@ from timetracker.backup import backup_activity_database as copy_activity_databas
 from timetracker.categories import CategoryConfigError, load_categorizer
 from timetracker.database import ActivityDatabase
 from timetracker.exporting import export_activity
+from timetracker.instance_lock import DatabaseLock
 from timetracker.models import ActivityPeriod, ActivitySnapshot
 from timetracker.preferences import load_tracking_preferences, save_tracking_preferences
 from timetracker.reporting import (
@@ -1299,13 +1300,34 @@ class TimeTrackerApp:
             self.root.destroy()
 
 
+def show_already_running() -> None:
+    root = tk.Tk()
+    root.withdraw()
+    messagebox.showinfo(
+        "Local Time Tracker",
+        "Local Time Tracker is already running for this database:\n"
+        f"{DATABASE_PATH}\n\n"
+        "Use the window that is already open. This copy will close "
+        "without recording activity.",
+        parent=root,
+    )
+    root.destroy()
+
+
 def main() -> int:
     if sys.platform != "win32":
         print("This graphical application is available on Windows only.")
         return 1
-    root = tk.Tk()
-    TimeTrackerApp(root)
-    root.mainloop()
+    lock = DatabaseLock(DATABASE_PATH)
+    if not lock.acquire():
+        show_already_running()
+        return 1
+    try:
+        root = tk.Tk()
+        TimeTrackerApp(root)
+        root.mainloop()
+    finally:
+        lock.release()
     return 0
 
 
