@@ -285,6 +285,11 @@ Installed application data is stored under:
 When run directly from the repository, the equivalent folders are inside the
 project directory.
 
+Only one desktop window can track a given `activity.db`. If the application is
+already running for the same database, a second launch shows a message and
+closes without recording activity. Copies that use different databases, such
+as the installed, portable and source versions, are not blocked by this check.
+
 ### Portable Windows build
 
 Releases that include a portable build provide a ZIP named
@@ -311,8 +316,8 @@ portable release, preserve the existing `data` directory if you want to keep
 your recorded activity.
 
 WARNING: Do not run the installed version and the portable version at the same
-time. Both versions can record activity simultaneously and may produce
-overlapping tracking data.
+time. They use separate databases, so the single-copy check does not stop them,
+and both versions would record the same activity.
 
 Window and browser-tab titles can contain sensitive information such as
 document names, searches, email subjects, account names, or private website
@@ -389,9 +394,10 @@ Launch the desktop application:
 python windows_app.py
 ```
 
-You can also double-click `Launch Time Tracker.cmd` after creating `.venv`. Do
-not run the source and installed versions simultaneously because two trackers
-would record overlapping periods.
+You can also double-click `Launch Time Tracker.cmd` after creating `.venv`. A
+second source window for the same project folder will not start. Do not run the
+source and installed versions simultaneously: they use separate databases, so
+both trackers would record the same activity.
 
 ## Command-line tools
 
