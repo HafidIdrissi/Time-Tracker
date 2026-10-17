@@ -1,5 +1,7 @@
 # First run on Windows
 
+> **Tip:** Not sure which build to download? Review the [Installation Comparison Table](../README.md#choosing-how-to-run-time-tracker-windows) in the README to choose between the standard installer, portable ZIP, or running from source.
+
 This walkthrough takes about five minutes with the current Windows installer.
 The examples below are synthetic. Local Time Tracker does not upload activity,
 and the installer is not described as signed here.
