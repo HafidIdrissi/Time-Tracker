@@ -60,7 +60,25 @@ paths, or private window titles are shown.
 Local Time Tracker is deliberately focused: a straightforward Windows desktop
 application for people who want useful activity insights without creating an
 account or operating a server.
+### Choosing How to Run Time-Tracker (Windows)
 
+Choose the setup mode that best fits your workflow:
+
+| Feature / Consideration | Standard Installer (`.exe`) | Portable ZIP (`.zip`) | Run from Source |
+| :--- | :--- | :--- | :--- |
+| **Best For** | Daily desktop use with Start Menu shortcut | USB drives / isolated folders | Developers & contributors |
+| **Prerequisites** | 64-bit Windows | 64-bit Windows | 64-bit Windows, Python 3.11+, `.venv` |
+| **Admin Rights Required?** | No (per-user install) | No | No |
+| **Setup Action** | Run setup wizard | Extract to a writable folder | Clone repo, set up venv & requirements |
+| **How to Launch** | Start Menu / Desktop shortcut | Run `Time-Tracker.exe` in extracted folder | Run via terminal within virtual environment |
+| **Data & Config Storage** | Standard app data directory | Inside extracted application directory | Local repository workspace |
+| **Uninstall Method** | Windows Settings / Add or remove programs | Delete extracted folder | Delete repository directory |
+| **Auto-Updates** | Manual download per release | Manual download per release | `git pull` |
+
+> **Note:**
+> - Packaged releases (`.exe` installer and `.zip` portable) run standalone and do **not** require Python to be installed.
+> - Do not run multiple installation modes simultaneously against the same active database.
+> - For step-by-step setup walkthroughs, refer to the [Quick Start](#quick-start) section and [First Run Guide](docs/FIRST_RUN.md).
 ## Quick start
 
 1. Open the [latest release](https://github.com/HafidIdrissi/Time-Tracker/releases/latest).
