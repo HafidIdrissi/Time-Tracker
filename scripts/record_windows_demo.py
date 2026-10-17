@@ -61,11 +61,26 @@ def cleanup_recorder(
         else:
             raise cleanup_error
 
+def _resolve_recording_tools() -> tuple[str, str]:
+    """
+    Resolve FFmpeg and FFprobe paths.
 
-def record(output: Path) -> None:
+    Raises:
+        RuntimeError: If either executable cannot be found.
+    """
     ffmpeg = shutil.which("ffmpeg")
+    probe = shutil.which("ffprobe")
+
     if not ffmpeg:
         raise RuntimeError("Install FFmpeg to record the Windows demo.")
+    if not probe:
+        raise RuntimeError("FFprobe is required to validate the recording.")
+
+    return ffmpeg, probe
+
+def record(output: Path) -> None:
+    ffmpeg, probe = _resolve_recording_tools()
+    
     output.mkdir(parents=True, exist_ok=True)
     fixture = NativeDesktopTests("test_tracker_titles_analysis_reports_stop_restart_and_reset")
     process = None
@@ -129,9 +144,6 @@ def record(output: Path) -> None:
                 raise RuntimeError("FFmpeg failed; inspect recording.log.")
         if path.stat().st_size < 10000:
             raise RuntimeError("Demo video is empty.")
-        probe = shutil.which("ffprobe")
-        if not probe:
-            raise RuntimeError("FFprobe is required to validate the recording.")
         duration = float(subprocess.check_output(
             [probe, "-v", "error", "-show_entries", "format=duration",
              "-of", "default=noprint_wrappers=1:nokey=1", str(path)],
