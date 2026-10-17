@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import unittest
 from datetime import date, datetime, timedelta, timezone
+from unittest.mock import patch
 
 from timetracker.analytics import analyze_usage, browser_tab_title
 from timetracker.reporting import ReportPeriod
@@ -302,6 +303,118 @@ class AnalyticsTests(unittest.TestCase):
         self.assertEqual(daily.buckets[1].total_seconds, 30 * 60)
         self.assertEqual(sum(bucket.total_seconds for bucket in daily.buckets), daily.active_seconds)
 
+
+    def test_idle_only_single_day_has_no_active_analytics(self) -> None:
+        day = date(2026, 7, 20)
+        fixed_timezone = timezone(timedelta(hours=5, minutes=30))
+
+        def fixed_local_midnight(value: date) -> datetime:
+            return datetime.combine(value, datetime.min.time(), tzinfo=fixed_timezone)
+
+        idle_periods = [
+            self._period(
+                datetime(2026, 7, 20, 9, 0, tzinfo=fixed_timezone),
+                5,
+                "Idle",
+                "Break",
+                "Idle",
+                "#999999",
+                idle=True,
+            ),
+            self._period(
+                datetime(2026, 7, 20, 14, 0, tzinfo=fixed_timezone),
+                7,
+                "Idle",
+                "Away",
+                "Idle",
+                "#999999",
+                idle=True,
+            ),
+        ]
+
+        with patch(
+            "timetracker.analytics.local_midnight",
+            side_effect=fixed_local_midnight,
+        ):
+            analytics = analyze_usage(idle_periods, day, day)
+
+            self.assertEqual(analytics.idle_seconds, 12 * 60)
+            self.assertEqual(analytics.active_seconds, 0)
+            self.assertEqual(analytics.average_daily_seconds, 0)
+            self.assertEqual(analytics.longest_session_seconds, 0)
+            self.assertEqual(analytics.categories, ())
+            self.assertEqual(analytics.applications, ())
+            self.assertEqual(analytics.browser_tabs, ())
+            self.assertEqual(len(analytics.buckets), 24)
+
+            for bucket in analytics.buckets:
+                with self.subTest(bucket=bucket.label):
+                    self.assertEqual(bucket.total_seconds, 0)
+                    self.assertEqual(bucket.categories, ())
+
+            active_control = self._period(
+                datetime(2026, 7, 20, 10, 0, tzinfo=fixed_timezone),
+                1,
+                "Code.exe",
+                "Editor",
+                "Work",
+                "#111111",
+            )
+            control = analyze_usage([active_control], day, day)
+
+            self.assertEqual(control.active_seconds, 60)
+            self.assertEqual(control.categories, (("Work", "#111111", 60),))
+            self.assertEqual(control.applications, (("Code.exe", 60),))
+            self.assertEqual(control.longest_session_seconds, 60)
+
+    def test_idle_only_multi_day_has_no_active_analytics(self) -> None:
+        start_day = date(2026, 7, 20)
+        end_day = date(2026, 7, 22)
+        fixed_timezone = timezone(timedelta(hours=5, minutes=30))
+
+        def fixed_local_midnight(value: date) -> datetime:
+            return datetime.combine(value, datetime.min.time(), tzinfo=fixed_timezone)
+
+        idle_periods = [
+            self._period(
+                datetime(2026, 7, 20, 9, 0, tzinfo=fixed_timezone),
+                5,
+                "Idle",
+                "Break",
+                "Idle",
+                "#999999",
+                idle=True,
+            ),
+            self._period(
+                datetime(2026, 7, 22, 15, 0, tzinfo=fixed_timezone),
+                7,
+                "Idle",
+                "Away",
+                "Idle",
+                "#999999",
+                idle=True,
+            ),
+        ]
+
+        with patch(
+            "timetracker.analytics.local_midnight",
+            side_effect=fixed_local_midnight,
+        ):
+            analytics = analyze_usage(idle_periods, start_day, end_day)
+
+        self.assertEqual(analytics.idle_seconds, 12 * 60)
+        self.assertEqual(analytics.active_seconds, 0)
+        self.assertEqual(analytics.average_daily_seconds, 0)
+        self.assertEqual(analytics.longest_session_seconds, 0)
+        self.assertEqual(analytics.categories, ())
+        self.assertEqual(analytics.applications, ())
+        self.assertEqual(analytics.browser_tabs, ())
+        self.assertEqual(len(analytics.buckets), 3)
+
+        for bucket in analytics.buckets:
+            with self.subTest(bucket=bucket.label):
+                self.assertEqual(bucket.total_seconds, 0)
+                self.assertEqual(bucket.categories, ())
 
 if __name__ == "__main__":
     unittest.main()
