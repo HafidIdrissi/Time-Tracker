@@ -1,4 +1,5 @@
 # First run on Windows
+[Leer esta guía en español](FIRST_RUN.es.md)
 
 This walkthrough takes about five minutes with the current Windows installer.
 The examples below are synthetic. Local Time Tracker does not upload activity,
