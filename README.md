@@ -520,16 +520,15 @@ matches your skills:
 | Your interests | Starting point | Environment |
 | --- | --- | --- |
 | Writing and onboarding | [Open documentation tasks](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20label%3Adocumentation%20label%3A%22good%20first%20issue%22) | Read and preview Markdown; verify any documented commands on their target platform |
-| Python and unit tests | [Category validation coverage](https://github.com/HafidIdrissi/Time-Tracker/issues/200) or [export format validation](https://github.com/HafidIdrissi/Time-Tracker/issues/202) | Python core; Windows or a configured non-Windows development environment |
-| HTML and accessibility | [Report table captions and scopes](https://github.com/HafidIdrissi/Time-Tracker/issues/108) | Python to generate fictional reports; browser and accessibility checks |
-| GitHub Actions | [Bound the core test job](https://github.com/HafidIdrissi/Time-Tracker/issues/203) | Workflow YAML and CI run evidence |
-| Windows testing | [Display scaling checks](https://github.com/HafidIdrissi/Time-Tracker/issues/171) | A real Windows desktop with disposable data |
+| Python and unit tests | [Open test tasks](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20label%3A%22good%20first%20issue%22%20test) | Python core; Windows or a configured non-Windows development environment |
+| HTML and accessibility | [Open accessibility tasks](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20accessibility) | Python to generate fictional reports; browser and accessibility checks |
+| GitHub Actions | [Open CI tasks](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20CI) | Workflow YAML and CI run evidence |
+| Windows testing | [Open Windows tasks](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20Windows%20in%3Atitle) | A real Windows desktop with disposable data |
 
-Issue links are examples, not reservations. Check the current assignee,
-comments and linked pull requests before choosing one. The [live starter
-list](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20label%3A%22good%20first%20issue%22)
-filters for open, unassigned issues; a maintainer may also have confirmed a
-claim in the discussion.
+Each link is a live search for open, unassigned issues, not a reservation.
+Availability can change between searching and claiming: before choosing one,
+read the current assignee, the comments and any linked pull requests, because a
+maintainer may already have confirmed a claim in the discussion.
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md), comment with your approach and wait for
 scope confirmation. For a code change, run focused tests and the full suite;

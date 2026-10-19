@@ -20,6 +20,11 @@ Issues labeled `good first issue` are small, focused introductions to the
 project. Issues labeled `help wanted` may require more design or Windows
 testing.
 
+Search for [open, unassigned starter tasks](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20label%3A%22good%20first%20issue%22)
+or the wider [help wanted backlog](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20label%3A%22help%20wanted%22).
+Availability can change after a search runs, so read the current assignee,
+comments and linked pull requests before claiming an issue.
+
 1. Choose an open, unassigned issue that matches your experience.
 2. Comment with a short implementation plan and ask to be assigned.
 3. Wait for the maintainer to confirm the scope before starting substantial
