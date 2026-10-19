@@ -514,14 +514,14 @@ matches your skills:
 | Your interests | Starting point | Environment |
 | --- | --- | --- |
 | Writing and onboarding | [Open documentation tasks](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20label%3Adocumentation%20label%3A%22good%20first%20issue%22) | Read and preview Markdown; verify any documented commands on their target platform |
-| Python and unit tests | [Category validation coverage](https://github.com/HafidIdrissi/Time-Tracker/issues/200) or [export format validation](https://github.com/HafidIdrissi/Time-Tracker/issues/202) | Python core; Windows or a configured non-Windows development environment |
-| HTML and accessibility | [Report table captions and scopes](https://github.com/HafidIdrissi/Time-Tracker/issues/108) | Python to generate fictional reports; browser and accessibility checks |
-| GitHub Actions | [Bound the core test job](https://github.com/HafidIdrissi/Time-Tracker/issues/203) | Workflow YAML and CI run evidence |
-| Windows testing | [Display scaling checks](https://github.com/HafidIdrissi/Time-Tracker/issues/171) | A real Windows desktop with disposable data |
+| Python and unit tests | [Find Python and testing tasks](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20label%3A%22good%20first%20issue%22%20Python) | Python core; Windows or a configured non-Windows development environment |
+| HTML and accessibility | [Find accessibility tasks](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20accessibility) | Python to generate fictional reports; browser and accessibility checks |
+| GitHub Actions | [Find GitHub Actions tasks](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20%22GitHub%20Actions%22) | Workflow YAML and CI run evidence |
+| Windows testing | [Find Windows testing tasks](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20Windows) | A real Windows desktop with disposable data |
 
-Issue links are examples, not reservations. Check the current assignee,
-comments and linked pull requests before choosing one. The [live starter
-list](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20label%3A%22good%20first%20issue%22)
+Issue links are examples, not reservations. Issue availability can change,
+so check the current assignee, comments and linked pull requests before
+choosing one. The [live starter list](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20label%3A%22good%20first%20issue%22)
 filters for open, unassigned issues; a maintainer may also have confirmed a
 claim in the discussion.
 
