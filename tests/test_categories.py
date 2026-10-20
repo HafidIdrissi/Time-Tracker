@@ -149,6 +149,72 @@ class CategorizerTests(unittest.TestCase):
                         load_categorizer(path)
                 self.assertIn(expected, str(raised.exception))
 
+    def test_duplicate_json_keys_rejected(self) -> None:
+        """Repeated JSON object keys raise CategoryConfigError (issue #329).
+        Fixtures are literal strings: a Python dict cannot retain duplicates.
+        """
+        cases = {
+            "repeated root categories": (
+                '{"categories": [], "categories": []}',
+                "categories",
+            ),
+            "repeated root default_color": (
+                '{"default_color": "#111111", "default_color": "#222222", "categories": []}',
+                "default_color",
+            ),
+            "repeated color in one category": (
+                '{"categories": [{"name": "Work", "color": "#111111", '
+                '"color": "#222222", "keywords": ["code"]}]}',
+                "color",
+            ),
+            "repeated keywords in one category": (
+                '{"categories": [{"name": "Work", "color": "#111111", '
+                '"keywords": ["code"], "keywords": ["mail"]}]}',
+                "keywords",
+            ),
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            for label, (payload, key) in cases.items():
+                for encoding in ("utf-8", "utf-8-sig"):
+                    with self.subTest(label=label, encoding=encoding):
+                        path = Path(directory) / "config.json"
+                        path.write_text(payload, encoding=encoding)
+                        before = path.read_bytes()
+                        with self.assertRaises(CategoryConfigError) as raised:
+                            load_categorizer(path)
+                        message = str(raised.exception)
+                        self.assertIn("Duplicate", message)
+                        self.assertIn(key, message)
+                        # No configuration-value dump.
+                        self.assertNotIn("#222222", message)
+                        # Loader must not mutate the input.
+                        self.assertEqual(before, path.read_bytes())
+
+    def test_same_field_names_across_categories_allowed(self) -> None:
+        """Two valid objects may share field names; order and rules preserved."""
+        payload = (
+            '{"categories": ['
+            '{"name": "Work", "color": "#111111", "keywords": ["code"]}, '
+            '{"name": "Play", "color": "#222222", "keywords": ["game"]}'
+            ']}'
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            for encoding in ("utf-8", "utf-8-sig"):
+                with self.subTest(encoding=encoding):
+                    path = Path(directory) / f"valid_{encoding}.json"
+                    path.write_text(payload, encoding=encoding)
+                    before = path.read_bytes()
+                    categorizer = load_categorizer(path)
+                    self.assertEqual(
+                        [c.name for c in categorizer.categories],
+                        ["Work", "Play"],
+                    )
+                    self.assertEqual(
+                        categorizer.categorize("code.exe", "Project"),
+                        ("Work", "#111111"),
+                    )
+                    self.assertEqual(before, path.read_bytes())
+
     def test_names_and_keywords_are_trimmed(self) -> None:
         payload = {
             "default_category": " Other ",

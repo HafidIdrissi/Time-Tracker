@@ -374,6 +374,7 @@ that file does not exist, the application uses `config.example.json`.
 ```
 
 The first matching category wins, so place specific rules before broad rules.
+Repeated object keys are rejected as a configuration error.
 Preview one synthetic application and title without tracking or a database:
 
 ```powershell

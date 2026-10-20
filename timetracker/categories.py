@@ -59,12 +59,24 @@ def _color(value: Any, field: str) -> str:
     return color
 
 
+def _no_duplicate_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    obj: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in obj:
+            raise CategoryConfigError(f"Duplicate key: {key!r}")
+        obj[key] = value
+    return obj
+
+
 def load_categorizer(path: str | Path) -> Categorizer:
     """Load and validate a JSON category configuration."""
 
     config_path = Path(path)
     try:
-        raw = json.loads(config_path.read_text(encoding="utf-8-sig"))
+        raw = json.loads(
+            config_path.read_text(encoding="utf-8-sig"),
+            object_pairs_hook=_no_duplicate_object,
+        )
     except FileNotFoundError as exc:
         raise CategoryConfigError(f"Configuration not found: {config_path}") from exc
     except json.JSONDecodeError as exc:
