@@ -1,4 +1,6 @@
-"""Test description
+"""Test that existing recording output files prevent recording from starting
+unless overwrite is enabled. Verify that only known recorder outputs block
+recording, unrelated files are preserved, and checks occur before recording.
 """
 from __future__ import annotations
 
