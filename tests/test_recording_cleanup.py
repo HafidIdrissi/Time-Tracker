@@ -18,6 +18,7 @@ import sys
 import unittest
 from pathlib import Path
 from unittest import mock
+import tempfile
 
 
 def _load_recorder_module():
@@ -235,18 +236,26 @@ class TestRecordingCleanup(unittest.TestCase):
     def test_record_entrypoint_drives_cleanup_and_preserves_primary_error(self) -> None:
         """Drive record() with mocked dependencies to verify end-to-end cleanup integration."""
         fixture = FakeFixture()
-        mock_output = mock.MagicMock(spec=Path)
+        
+        with tempfile.TemporaryDirectory() as temp_dir:
+            mock_output = Path(temp_dir) / "demo"
 
-        with (
-            mock.patch.object(RECORDER.shutil, "which", return_value="fake_ffmpeg"),
-            mock.patch.object(RECORDER, "NativeDesktopTests", return_value=fixture),
-            mock.patch.object(fixture, "setUp", side_effect=RuntimeError("Primary setUp error")),
-        ):
-            with self.assertRaises(RuntimeError) as ctx:
-                RECORDER.record(mock_output)
+            with (
+                mock.patch.object(
+                    RECORDER.shutil, "which", side_effect=["fake_ffmpeg", "fake_ffprobe"]
+                ),
+                mock.patch.object(RECORDER, "NativeDesktopTests", return_value=fixture),
+                mock.patch.object(
+                    fixture,
+                    "setUp",
+                    side_effect=RuntimeError("Primary setUp error"),
+                ),
+            ):
+                with self.assertRaises(RuntimeError) as ctx:
+                    RECORDER.record(mock_output)
 
-        self.assertEqual(str(ctx.exception), "Primary setUp error")
-        self.assertEqual(fixture.cleanup_call_count, 1)
+            self.assertEqual(str(ctx.exception), "Primary setUp error")
+            self.assertEqual(fixture.cleanup_call_count, 1)
 
 
 if __name__ == "__main__":

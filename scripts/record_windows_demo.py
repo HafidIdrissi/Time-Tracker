@@ -61,6 +61,25 @@ def cleanup_recorder(
         else:
             raise cleanup_error
 
+def _check_recording_outputs(output: Path, *, overwrite: bool) -> None:
+    """Reject existing recorder outputs unless overwrite is explicit."""
+    if overwrite:
+        return
+
+    filenames = (
+        "LocalTimeTracker-demo.mp4",
+        "LocalTimeTracker-demo.txt",
+        "recording.log",
+    )
+
+    for filename in filenames:
+        path = output.joinpath(filename)
+        if path.is_file():
+            raise RuntimeError(
+                f"File {path} already exists. "
+                "Aborting demo. Use --overwrite to replace existing recordings."
+            )
+
 def _resolve_recording_tools() -> tuple[str, str]:
     """
     Resolve FFmpeg and FFprobe paths.
@@ -78,7 +97,9 @@ def _resolve_recording_tools() -> tuple[str, str]:
 
     return ffmpeg, probe
 
-def record(output: Path) -> None:
+def record(output: Path, overwrite: bool = False) -> None:
+    _check_recording_outputs(output, overwrite=overwrite)
+
     ffmpeg, probe = _resolve_recording_tools()
     
     output.mkdir(parents=True, exist_ok=True)
@@ -171,4 +192,11 @@ def record(output: Path) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=Path("demo"))
-    record(parser.parse_args().output.resolve())
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow overwriting existing recording output files.",
+    )
+
+    args = parser.parse_args()
+    record(args.output.resolve(), overwrite=args.overwrite)
