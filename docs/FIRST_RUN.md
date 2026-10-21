@@ -55,8 +55,9 @@ cards, chart, and rankings describe the same local day. An empty chart says
 
 Open **Reports and data**. Keep today's date in **Date (YYYY-MM-DD)**, then
 press **Generate and open report**. The report is an HTML file in the local
-reports folder. **Open reports folder** shows that folder. The report does not
-need a network connection.
+reports folder. After it is generated, **Copy report path** copies its exact
+file path when clicked or activated from the keyboard. **Open reports folder**
+shows that folder. The report does not need a network connection.
 
 ## 6. Stop and start
 

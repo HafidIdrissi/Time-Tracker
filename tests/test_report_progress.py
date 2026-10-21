@@ -81,11 +81,16 @@ class ReportProgressTests(unittest.TestCase):
         self.app = windows_app.TimeTrackerApp.__new__(windows_app.TimeTrackerApp)
         self.app.report_date = FakeStringVar(date.today().isoformat())
         self.app.report_status_text = FakeStringVar("")
+        self.app.report_output_path = None
         self.app.report_button = FakeWidget()
+        self.app.report_copy_button = FakeWidget()
+        self.app.report_copy_button.configure(state="disabled")
         self.app.report_date_entry = FakeWidget()
         self.app.messages = queue.Queue()
         self.app.closing = True
         self.app.root = mock.Mock()
+        self.app.root.clipboard_clear = mock.Mock()
+        self.app.root.clipboard_append = mock.Mock()
 
     def _seed(self) -> None:
         start = datetime(2026, 7, 20, 9, 0, tzinfo=timezone.utc)
@@ -115,7 +120,11 @@ class ReportProgressTests(unittest.TestCase):
         # Busy state entered.
         self.assertEqual(self.app.report_status_text.get(), "Generating report\u2026")
         self.assertEqual(str(self.app.report_button.cget("state")), "disabled")
+        self.assertEqual(str(self.app.report_copy_button.cget("state")), "disabled")
         self.assertEqual(str(self.app.report_date_entry.cget("state")), "disabled")
+        self.app.copy_report_path()
+        self.app.root.clipboard_clear.assert_not_called()
+        self.app.root.clipboard_append.assert_not_called()
 
         # Simulate worker result.
         output = self.reports / "report-2026-07-20.html"
@@ -126,9 +135,16 @@ class ReportProgressTests(unittest.TestCase):
         self.assertIn(str(output), self.app.report_status_text.get())
         self.assertIn("Report generated:", self.app.report_status_text.get())
         self.assertNotIn("could not open", self.app.report_status_text.get())
+        self.assertEqual(self.app.report_output_path, str(output))
+        self.assertEqual(str(self.app.report_copy_button.cget("state")), "normal")
         self.assertEqual(str(self.app.report_button.cget("state")), "normal")
         self.assertEqual(str(self.app.report_date_entry.cget("state")), "normal")
         self.startfile.assert_called_once_with(str(output))
+        self.app.root.clipboard_clear.assert_not_called()
+        self.app.root.clipboard_append.assert_not_called()
+        self.app.copy_report_path()
+        self.app.root.clipboard_clear.assert_called_once_with()
+        self.app.root.clipboard_append.assert_called_once_with(str(output))
 
     # --- 2. Generation failure ---
 
@@ -147,8 +163,13 @@ class ReportProgressTests(unittest.TestCase):
         status = self.app.report_status_text.get()
         self.assertIn("failed", status.lower())
         self.assertIn("database is locked", status)
+        self.assertIsNone(self.app.report_output_path)
+        self.assertEqual(str(self.app.report_copy_button.cget("state")), "disabled")
         self.assertEqual(str(self.app.report_button.cget("state")), "normal")
         self.assertEqual(str(self.app.report_date_entry.cget("state")), "normal")
+        self.app.copy_report_path()
+        self.app.root.clipboard_clear.assert_not_called()
+        self.app.root.clipboard_append.assert_not_called()
 
     # --- 3. Open failure after successful generation ---
 
@@ -169,9 +190,29 @@ class ReportProgressTests(unittest.TestCase):
         # Opening failure is distinguished from generation failure.
         self.assertIn("could not open automatically", status)
         self.assertNotIn("failed", status.lower())
+        self.assertEqual(self.app.report_output_path, str(output))
+        self.assertEqual(str(self.app.report_copy_button.cget("state")), "normal")
         # Controls restored.
         self.assertEqual(str(self.app.report_button.cget("state")), "normal")
         self.assertEqual(str(self.app.report_date_entry.cget("state")), "normal")
+        self.app.copy_report_path()
+        self.app.root.clipboard_clear.assert_called_once_with()
+        self.app.root.clipboard_append.assert_called_once_with(str(output))
+
+    def test_new_generation_clears_copyable_path_until_success(self) -> None:
+        previous_output = Path("C:/fictional/previous-report.html")
+        self.app.report_output_path = str(previous_output)
+        self.app.report_copy_button.configure(state="normal")
+        self.app.report_date.set("2026-07-21")
+
+        with mock.patch("threading.Thread"):
+            self.app.generate_selected_report()
+
+        self.assertIsNone(self.app.report_output_path)
+        self.assertEqual(str(self.app.report_copy_button.cget("state")), "disabled")
+        self.app.copy_report_path()
+        self.app.root.clipboard_clear.assert_not_called()
+        self.app.root.clipboard_append.assert_not_called()
 
     # --- 4. Invalid date ---
 
@@ -185,6 +226,7 @@ class ReportProgressTests(unittest.TestCase):
         self.showwarning.assert_called_once()
         self.assertEqual(self.app.report_status_text.get(), "")
         self.assertEqual(str(self.app.report_button.cget("state")), "normal")
+        self.assertEqual(str(self.app.report_copy_button.cget("state")), "disabled")
         self.assertEqual(str(self.app.report_date_entry.cget("state")), "normal")
 
     # --- 5. Controls always restored ---

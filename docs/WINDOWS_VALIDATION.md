@@ -21,6 +21,8 @@ real tracking and report threads. Checks cover:
 - invalid local configuration, cleared error metrics and recovery;
 - saved settings, failed preference writes and loading settings in a new app;
 - Ctrl+Tab, Ctrl+Shift+Tab, Alt+D/U/R, Tab and Shift+Tab;
+- Tab navigation to **Copy report path** and keyboard activation with the exact
+  generated path sent to a mocked clipboard;
 - Treeview selection, focus, visibility, top position and deleted rows;
 - CSV/JSON round trips, cancellation and blocked destinations;
 - SQLite backup while tracking, overwrite decisions and source protection;
