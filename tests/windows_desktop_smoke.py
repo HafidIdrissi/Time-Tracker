@@ -141,6 +141,9 @@ class NativeDesktopTests(TestCase):
         self.assertIn("Report generated:", self.app.report_status_text.get())
         status_path = Path(self.app.report_status_text.get().removeprefix("Report generated: ").strip())
         self.assertTrue(status_path.samefile(report))
+        generated_path = self.app.report_output_path
+        self.assertIsNotNone(generated_path)
+        self.assertTrue(Path(generated_path).samefile(report))
         self.assertEqual(str(self.app.report_button.cget("state")), "normal")
         self.assertEqual(str(self.app.report_copy_button.cget("state")), "normal")
         self.assertEqual(str(self.app.report_date_entry.cget("state")), "normal")
@@ -163,7 +166,7 @@ class NativeDesktopTests(TestCase):
             self.app.report_copy_button.event_generate("<KeyRelease-space>")
             self.root.update()
             clipboard_clear.assert_called_once_with()
-            clipboard_append.assert_called_once_with(str(report))
+            clipboard_append.assert_called_once_with(generated_path)
         self.showerror.assert_not_called()
         self.stop()
         self.app.start_tracking()
