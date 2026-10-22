@@ -282,6 +282,12 @@ Installed application data is stored under:
 └── reports\
 ```
 
+The installed app's personal category configuration is
+`%LOCALAPPDATA%\LocalTimeTracker\config.json`. In a source checkout,
+`config.json` is in the project directory. In portable mode, it is in the
+extracted application folder. If no personal `config.json` exists, the app
+uses the example configuration.
+
 When run directly from the repository, the equivalent folders are inside the
 project directory.
 
@@ -330,6 +336,9 @@ Upgrading to a newer portable release while keeping your data:
 
 Activity is categorized with case-insensitive keywords from `config.json`. If
 that file does not exist, the application uses `config.example.json`.
+For the personal configuration's location in each app mode, see
+[Local data and privacy](#local-data-and-privacy). The preview command below
+requires `--config` and reads the exact file path you provide.
 
 ```json
 {

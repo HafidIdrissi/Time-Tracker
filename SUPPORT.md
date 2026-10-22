@@ -101,6 +101,64 @@ steps.
 Do not upload `activity.db` or a personal generated report. If sample data is
 essential, create a new database containing demonstration activity only.
 
+## Recover from malformed category configuration
+
+If category preview reports `Invalid JSON`, check the configuration file you
+passed to `--config`. First identify the intended file: the README's
+[configuration-location guidance](README.md#local-data-and-privacy) lists
+where the app keeps `config.json`, and the
+[Categories guide](README.md#categories) explains the format. The preview
+script does not find the app's config for you; `--config` must name the file
+you want to check.
+
+Before editing, make a backup of your own configuration. For example, if you
+are using a fictional `C:\demo\config.json`, run this in PowerShell:
+
+```powershell
+Copy-Item "C:\demo\config.json" "C:\demo\config.json.bak"
+```
+
+Do not replace the backup with the edited file.
+
+An error such as `Invalid JSON in C:\demo\config.json (line 3)` reports the
+line where parsing failed; the mistake can be on that line or just before it.
+For example, this fictional config is missing a comma after `"Other"`:
+
+```json
+{
+  "default_category": "Other"
+  "categories": [
+    {"name": "Work", "keywords": ["gmail"]}
+  ]
+}
+```
+
+Add the comma, save the file, and preview that same path again:
+
+```json
+{
+  "default_category": "Other",
+  "categories": [
+    {"name": "Work", "keywords": ["gmail"]}
+  ]
+}
+```
+
+From the repository root, run the existing preview command with the exact
+configuration path (quote paths that contain spaces):
+
+```powershell
+python .\preview_category.py --config "C:\demo\config.json" --application chrome.exe --title "Fictional inbox gmail"
+```
+
+The malformed file prints an error and returns a non-zero exit status; the
+corrected file prints `Work`. Preview only reads the file—it does not repair or
+rewrite it. Do not delete `activity.db` or use Reset: those affect recorded
+activity, not category configuration, and are unrelated to this repair.
+
+Use a fictional or disposable configuration when testing recovery steps. Do not
+share personal activity databases or reports when asking for help.
+
 ## Security issues
 
 Do not open a public issue for a vulnerability. Follow the private process in
