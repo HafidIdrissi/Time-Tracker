@@ -148,7 +148,7 @@ From the repository root, run the existing preview command with the exact
 configuration path (quote paths that contain spaces):
 
 ```powershell
-python .\preview_category.py --config "C:\demo\config.json" --application chrome.exe --title "Fictional inbox gmail"
+.\.venv\Scripts\python.exe .\preview_category.py --config "C:\demo\config.json" --application chrome.exe --title "Fictional inbox gmail"
 ```
 
 The malformed file prints an error and returns a non-zero exit status; the
