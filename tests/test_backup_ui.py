@@ -39,6 +39,37 @@ class BackupDialogTests(unittest.TestCase):
                 self.assertEqual(database.recent_periods(), [])
             self.assertTrue(source.read_bytes().startswith(b"SQLite format 3"))
 
+    def test_failed_backup_preserves_existing_destination_without_success(self) -> None:
+        app = windows_app.TimeTrackerApp.__new__(windows_app.TimeTrackerApp)
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "activity.db"
+            destination = Path(directory) / "backup.db"
+            sentinel = b"previous backup"
+            with ActivityDatabase(source):
+                pass
+            destination.write_bytes(sentinel)
+            with (
+                mock.patch.object(windows_app, "DATABASE_PATH", source),
+                mock.patch.object(
+                    windows_app.filedialog,
+                    "asksaveasfilename",
+                    return_value=str(destination),
+                ),
+                mock.patch.object(windows_app.messagebox, "askyesno", return_value=True),
+                mock.patch.object(
+                    windows_app,
+                    "copy_activity_database",
+                    side_effect=OSError("fixture"),
+                ),
+                mock.patch.object(windows_app.messagebox, "showerror") as showerror,
+                mock.patch.object(windows_app.messagebox, "showinfo") as showinfo,
+            ):
+                app.backup_activity_database()
+            self.assertEqual(destination.read_bytes(), sentinel)
+            showerror.assert_called_once()
+            self.assertEqual(showerror.call_args.args[0], "Unable to back up")
+            showinfo.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()
