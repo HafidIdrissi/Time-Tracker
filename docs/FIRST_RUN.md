@@ -1,5 +1,5 @@
 # First run on Windows
-[Leer esta guía en español](FIRST_RUN.es.md)
+[Leer esta guía en español](FIRST_RUN.es.md) · [اقرأ هذا الدليل بالعربية](FIRST_RUN.ar.md)
 
 > **Tip:** Not sure which build to download? Review the [Installation Comparison Table](../README.md#choosing-how-to-run-time-tracker-windows) in the README to choose between the standard installer, portable ZIP, or running from source.
 
