@@ -133,6 +133,7 @@ class TimeTrackerApp:
         self.current_signature: tuple[str, str] | None = None
         self.current_since: datetime | None = None
         self.tracking_started_at: datetime | None = None
+        self.open_report_var = tk.BooleanVar(value=True)
 
         self.status_text = tk.StringVar(value="Stopped")
         self.status_detail = tk.StringVar(value="Tracking is not running")
@@ -158,6 +159,7 @@ class TimeTrackerApp:
         self.analysis_longest_text = tk.StringVar(value="0 min")
         self.report_date = tk.StringVar(value=date.today().isoformat())
         self.report_status_text = tk.StringVar(value="")
+        self.open_report_var = tk.BooleanVar(value=True)
         self.report_output_path: str | None = None
 
         self._configure_window()
@@ -466,7 +468,13 @@ class TimeTrackerApp:
             foreground="#475569",
             wraplength=900,
         ).grid(row=3, column=0, columnspan=5, sticky="w", pady=(10, 0))
-
+        
+        self.open_report_checkbox = ttk.Checkbutton(
+            report_card,
+            text="Open report after generating",
+            variable=self.open_report_var,
+        )
+        self.open_report_checkbox.grid(row=4, column=0, columnspan=5, sticky="w", pady=(4, 0))        
         data_card = ttk.Frame(reports_tab, style="Card.TFrame", padding=(20, 18))
         data_card.pack(fill="x")
         ttk.Label(data_card, text="DATA MANAGEMENT", style="CardTitle.TLabel").pack(
@@ -814,13 +822,15 @@ class TimeTrackerApp:
                         self.window_text.set(window_title)
                 elif kind == "report_ready":
                     output_path = str(payload)
+                    should_open = getattr(self, "_should_open_report", True)
                     self.report_output_path = output_path
                     self.report_copy_button.configure(state="normal")
                     self.report_status_text.set(f"Report generated: {output_path}")
-                    try:
-                        os.startfile(output_path)
-                    except OSError:
-                        self.report_status_text.set(
+                    if should_open:
+                        try:
+                            os.startfile(output_path)
+                        except OSError:
+                            self.report_status_text.set(
                             f"Report generated: {output_path}"
                             " (could not open automatically)"
                         )
@@ -1269,6 +1279,12 @@ class TimeTrackerApp:
         return bundled_resource("config.example.json")
 
     def generate_selected_report(self) -> None:
+        var = getattr(self, "open_report_var", None)
+        if var is not None:
+            val = var.get()
+            self._should_open_report = val not in (False, 0, "0", "")
+        else:
+            self._should_open_report = True
         try:
             selected_day = date.fromisoformat(str(self.report_date.get()).strip())
         except (TypeError, ValueError):
