@@ -159,6 +159,7 @@ class TimeTrackerApp:
         self.analysis_longest_text = tk.StringVar(value="0 min")
         self.report_date = tk.StringVar(value=date.today().isoformat())
         self.report_status_text = tk.StringVar(value="")
+        self.open_report_var = tk.BooleanVar(value=True)
         self.report_output_path: str | None = None
 
         self._configure_window()
@@ -1279,7 +1280,11 @@ class TimeTrackerApp:
 
     def generate_selected_report(self) -> None:
         var = getattr(self, "open_report_var", None)
-        self._should_open_report = bool(var.get()) if var is not None else True
+        if var is not None:
+            val = var.get()
+            self._should_open_report = val not in (False, 0, "0", "")
+        else:
+            self._should_open_report = True
         try:
             selected_day = date.fromisoformat(str(self.report_date.get()).strip())
         except (TypeError, ValueError):
