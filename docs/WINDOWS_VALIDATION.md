@@ -33,6 +33,10 @@ their boundaries. This suite does not attest to a human inspecting those
 dialogs or to live foreground-window sampling on a personal Windows desktop.
 The existing Win32 provider and storage tests remain part of the unit matrix.
 
+For a native suspend/resume trial, use the separate
+[sleep/resume QA protocol](qa/SLEEP_RESUME.md). Simulated polling gaps are not
+a substitute for a real Windows sleep and resume.
+
 ## Release checks
 
 Create the README's `.venv` and install PyInstaller and Inno Setup, then run:
