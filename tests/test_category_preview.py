@@ -77,5 +77,30 @@ class CategoryPreviewTests(unittest.TestCase):
             self.assertIn("Error:", stderr.getvalue())
 
 
+    def test_duplicate_keys_exit_nonzero_without_dump(self) -> None:
+        from io import StringIO
+        from unittest import mock
+
+        payload = (
+            '{"categories": [{"name": "Work", "color": "#111111", '
+            '"color": "#222222", "keywords": ["fictional-note"]}]}'
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            config = Path(directory) / "config.json"
+            config.write_text(payload, encoding="utf-8")
+            before = config.read_bytes()
+            stderr = StringIO()
+            with mock.patch("sys.stderr", stderr):
+                code = preview_category.main(
+                    ["--config", str(config), "--application", "notes.exe", "--title", "x"]
+                )
+            self.assertEqual(code, 1)
+            output = stderr.getvalue()
+            self.assertIn("Error:", output)
+            self.assertIn("Duplicate", output)
+            self.assertNotIn("#222222", output)
+            self.assertEqual(before, config.read_bytes())
+
+
 if __name__ == "__main__":
     unittest.main()

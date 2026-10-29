@@ -4,6 +4,7 @@ import csv
 import json
 import tempfile
 import unittest
+from dataclasses import replace
 from unittest import mock
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -19,7 +20,7 @@ class ExportTests(unittest.TestCase):
         start = datetime(2026, 1, 15, 9, 0, tzinfo=timezone(timedelta(hours=1)))
         with ActivityDatabase(path) as database:
             period_id = database.create_period(
-                ActivityState("notes.exe", 'Hello, "world"\nnext'), start
+                ActivityState("notes.exe", 'Hello, "world"\nnext — café'), start
             )
             database.update_period(period_id, start, start + timedelta(minutes=5))
             idle_id = database.create_period(
@@ -57,11 +58,75 @@ class ExportTests(unittest.TestCase):
             self.assertIn("+", rows[0]["started_at"])
             self.assertEqual(rows[1]["is_idle"], "True")
 
-            payload = json.loads(json_path.read_text(encoding="utf-8"))
-            self.assertEqual(payload[0]["window_title"], 'Hello, "world"\nnext')
+            def reject_non_finite(value: str) -> None:
+                raise ValueError(f"Invalid JSON constant: {value}")
+
+            json_text = json_path.read_text(encoding="utf-8")
+            payload = json.loads(
+                json_text,
+                parse_constant=reject_non_finite,
+            )
+            self.assertEqual(list(payload[0]), list(EXPORT_FIELDS))
+            self.assertEqual(
+                [row["application"] for row in payload],
+                ["notes.exe", "Idle"],
+            )
+            self.assertEqual(
+                [row["duration_seconds"] for row in payload],
+                [300.0, 60.0],
+            )
+            self.assertIsInstance(payload[0]["application"], str)
+            self.assertIsInstance(payload[0]["window_title"], str)
+            self.assertIsInstance(payload[0]["started_at"], str)
+            self.assertIsInstance(payload[0]["ended_at"], str)
+            self.assertIsInstance(payload[0]["duration_seconds"], float)
+            self.assertIsInstance(payload[0]["is_idle"], bool)
+            self.assertEqual(payload[0]["window_title"], 'Hello, "world"\nnext — café')
+            self.assertIn("café", json_text)
             self.assertTrue(payload[1]["is_idle"])
             self.assertIn("+", payload[0]["ended_at"])
             self.assertEqual(snapshot(), before)
+
+    def test_json_rejects_non_finite_durations_atomically(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = self._database(root)
+            with ActivityDatabase(source) as database:
+                source_rows = database.all_periods()
+            original_destination = "keep existing export"
+            destination = root / "out.json"
+            unrelated_sibling = root / ".out.json.keep.tmp"
+            unrelated_sibling.write_bytes(b"keep this unrelated temporary-pattern sibling")
+
+            for duration in (float("inf"), float("-inf"), float("nan")):
+                with self.subTest(duration=duration):
+                    destination.write_text(original_destination, encoding="utf-8")
+                    invalid_period = replace(
+                        source_rows[0],
+                        duration_seconds=duration,
+                    )
+                    temporary_files_before = set(root.glob(".out.json.*.tmp"))
+
+                    with mock.patch.object(
+                        ActivityDatabase,
+                        "all_periods",
+                        return_value=[invalid_period],
+                    ):
+                        with self.assertRaisesRegex(ValueError, "finite.*duration_seconds"):
+                            export_activity(source, destination, "json")
+
+                    temporary_files_after = set(root.glob(".out.json.*.tmp"))
+                    self.assertEqual(
+                        destination.read_text(encoding="utf-8"),
+                        original_destination,
+                    )
+                    self.assertEqual(temporary_files_after, temporary_files_before)
+                    self.assertEqual(
+                        unrelated_sibling.read_bytes(),
+                        b"keep this unrelated temporary-pattern sibling",
+                    )
+                    with ActivityDatabase(source) as database:
+                        self.assertEqual(database.all_periods(), source_rows)
 
     def test_empty_database_and_failed_export_leave_no_partial_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -133,6 +198,159 @@ class ExportTests(unittest.TestCase):
             self.assertTrue(csv_path.read_text(encoding="utf-8").startswith("application,"))
             self.assertTrue(json_path.read_text(encoding="utf-8").lstrip().startswith("["))
 
+    def test_exports_preserve_order_and_values(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "ordering.db"
+
+            periods = [
+                (
+                    ActivityState("later.exe", "Later"),
+                    datetime(2026, 1, 15, 12, 0, tzinfo=timezone.utc),
+                    datetime(2026, 1, 15, 12, 10, tzinfo=timezone.utc),
+                ),
+                (
+                    ActivityState("zeta.exe", "Zeta"),
+                    datetime(2026, 1, 15, 10, 0, tzinfo=timezone.utc),
+                    datetime(2026, 1, 15, 11, 0, tzinfo=timezone.utc),
+                ),
+                (
+                    ActivityState("alpha.exe", "Alpha"),
+                    datetime(2026, 1, 15, 10, 0, tzinfo=timezone.utc),
+                    datetime(2026, 1, 15, 10, 15, tzinfo=timezone.utc),
+                ),
+                (
+                    ActivityState("Idle", "Early idle", is_idle=True),
+                    datetime(2026, 1, 15, 8, 0, tzinfo=timezone.utc),
+                    datetime(2026, 1, 15, 8, 5, tzinfo=timezone.utc),
+                ),
+            ]
+
+            with ActivityDatabase(source) as database:
+                for state, start, end in periods:
+                    period_id = database.create_period(state, start)
+                    database.update_period(period_id, start, end)
+
+            def snapshot() -> list[tuple]:
+                with ActivityDatabase(source) as database:
+                    return [
+                        (
+                            period.id,
+                            period.application,
+                            period.window_title,
+                            period.started_at,
+                            period.ended_at,
+                            period.duration_seconds,
+                            period.is_idle,
+                        )
+                        for period in database.all_periods()
+                    ]
+
+            before = snapshot()
+
+            expected = [
+                (
+                    "Idle",
+                    "Early idle",
+                    "2026-01-15T08:00:00+00:00",
+                    "2026-01-15T08:05:00+00:00",
+                    300.0,
+                    True,
+                ),
+                (
+                    "zeta.exe",
+                    "Zeta",
+                    "2026-01-15T10:00:00+00:00",
+                    "2026-01-15T11:00:00+00:00",
+                    3600.0,
+                    False,
+                ),
+                (
+                    "alpha.exe",
+                    "Alpha",
+                    "2026-01-15T10:00:00+00:00",
+                    "2026-01-15T10:15:00+00:00",
+                    900.0,
+                    False,
+                ),
+                (
+                    "later.exe",
+                    "Later",
+                    "2026-01-15T12:00:00+00:00",
+                    "2026-01-15T12:10:00+00:00",
+                    600.0,
+                    False,
+                ),
+            ]
+
+            csv_path = export_activity(source, root / "first.csv", "csv")
+            csv_path_again = export_activity(
+                source, root / "second.csv", "csv"
+            )
+            json_path = export_activity(source, root / "first.json", "json")
+            json_path_again = export_activity(
+                source, root / "second.json", "json"
+            )
+
+            def read_csv(path: Path) -> list[dict[str, str]]:
+                with path.open(encoding="utf-8", newline="") as handle:
+                    reader = csv.DictReader(handle)
+                    self.assertEqual(reader.fieldnames, list(EXPORT_FIELDS))
+                    return list(reader)
+
+            csv_rows = read_csv(csv_path)
+            csv_rows_again = read_csv(csv_path_again)
+
+            json_rows = json.loads(json_path.read_text(encoding="utf-8"))
+            json_rows_again = json.loads(
+                json_path_again.read_text(encoding="utf-8")
+            )
+
+            for rows in (json_rows, json_rows_again):
+                for row in rows:
+                    self.assertEqual(set(row), set(EXPORT_FIELDS))
+                    self.assertIsInstance(row["application"], str)
+                    self.assertIsInstance(row["window_title"], str)
+                    self.assertIsInstance(row["started_at"], str)
+                    self.assertIsInstance(row["ended_at"], str)
+                    self.assertIs(type(row["duration_seconds"]), float)
+                    self.assertIs(type(row["is_idle"]), bool)
+
+            def logical_rows(rows: list[dict]) -> list[tuple]:
+                result = []
+
+                for row in rows:
+                    idle_value = row["is_idle"]
+
+                    if isinstance(idle_value, str):
+                        if idle_value not in ("True", "False"):
+                            self.fail(
+                                f"Unexpected CSV is_idle value: {idle_value!r}"
+                            )
+                        idle_value = idle_value == "True"
+                    else:
+                        self.assertIs(type(idle_value), bool)
+
+                    result.append(
+                        (
+                            row["application"],
+                            row["window_title"],
+                            row["started_at"],
+                            row["ended_at"],
+                            float(row["duration_seconds"]),
+                            idle_value,
+                        )
+                    )
+
+                return result
+
+            self.assertEqual(logical_rows(csv_rows), expected)
+            self.assertEqual(logical_rows(json_rows), expected)
+
+            self.assertEqual(csv_rows, csv_rows_again)
+            self.assertEqual(json_rows, json_rows_again)
+
+            self.assertEqual(snapshot(), before)
 
 if __name__ == "__main__":
     unittest.main()

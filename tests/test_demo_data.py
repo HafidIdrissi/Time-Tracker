@@ -119,6 +119,77 @@ class DemoDataTests(unittest.TestCase):
             self.assertNotIn("Traceback", message)
             self.assertEqual(existing_file.read_text(encoding="utf-8"), "keep this intact")
 
+    def test_existing_wal_sidecar_is_left_untouched(self) -> None:
+        generator = load_generator()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / "demo"
+            output.mkdir()
+            wal = output / "activity.db-wal"
+            wal.write_bytes(b"sentinel-wal")
+            other = output / "notes.txt"
+            other.write_bytes(b"leave me")
+
+            with mock.patch.object(
+                generator, "ActivityDatabase", side_effect=AssertionError("constructed")
+            ) as database_type:
+                with self.assertRaises(FileExistsError):
+                    generator.generate_demo_database(output)
+            database_type.assert_not_called()
+            self.assertEqual(wal.read_bytes(), b"sentinel-wal")
+            self.assertEqual(other.read_bytes(), b"leave me")
+            self.assertEqual(sorted(path.name for path in output.iterdir()), ["activity.db-wal", "notes.txt"])
+
+            clean = generator.generate_demo_database(root / "clean")
+            self.assertTrue(clean.is_file())
+            self.assertGreaterEqual(len(stored_rows(clean)), 4)
+
+    def test_version_exits_without_output_or_database_access(self) -> None:
+        generator = load_generator()
+        repository = Path(__file__).resolve().parents[1]
+        script = repository / "scripts" / "generate_demo_data.py"
+
+        with tempfile.TemporaryDirectory() as directory:
+            working_directory = Path(directory)
+            environment = os.environ.copy()
+            environment.pop("PYTHONPATH", None)
+
+            completed = subprocess.run(
+                [sys.executable, str(script), "--version"],
+                cwd=working_directory,
+                env=environment,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertEqual(
+                completed.stdout,
+                f"{script.name} {generator.__version__}\n",
+            )
+            self.assertEqual(completed.stderr, "")
+            self.assertEqual(list(working_directory.iterdir()), [])
+
+            stdout = io.StringIO()
+            with (
+                mock.patch.object(
+                    generator, "ActivityDatabase"
+                ) as database_type,
+                mock.patch("sys.stdout", stdout),
+                mock.patch("sys.argv", [str(script), "--version"]),
+            ):
+                with self.assertRaises(SystemExit) as raised:
+                    generator.build_parser().parse_args(["--version"])
+
+            self.assertEqual(raised.exception.code, 0)
+            self.assertEqual(
+                stdout.getvalue(),
+                f"{script.name} {generator.__version__}\n",
+            )
+            database_type.assert_not_called()
+            self.assertEqual(list(working_directory.iterdir()), [])
+
 
 if __name__ == "__main__":
     unittest.main()

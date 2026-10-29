@@ -37,6 +37,7 @@ try {
         --clean `
         --windowed `
         --name "LocalTimeTracker" `
+        --icon "assets\app-icon.ico" `
         --version-file $metadataPath `
         --add-data "config.example.json;." `
         windows_app.py

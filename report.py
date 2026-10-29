@@ -20,6 +20,10 @@ def parse_date(value: str) -> date:
         raise argparse.ArgumentTypeError("expected format: YYYY-MM-DD") from exc
 
 
+def parse_path(value: str) -> Path:
+    return Path(value).expanduser()
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Generate a local HTML report from the activity database."
@@ -28,9 +32,18 @@ def build_parser() -> argparse.ArgumentParser:
     selection.add_argument("--date", type=parse_date, help="Day to analyze (YYYY-MM-DD)")
     selection.add_argument("--from", dest="start_date", type=parse_date, help="First day")
     parser.add_argument("--to", dest="end_date", type=parse_date, help="Last day, inclusive")
-    parser.add_argument("--database", type=Path, default=Path("data/activity.db"))
-    parser.add_argument("--config", type=Path, default=None)
-    parser.add_argument("--output", type=Path, default=None)
+    parser.add_argument(
+        "--database", type=parse_path, default=Path("data/activity.db"),
+        help="Activity database path (supports ~)",
+    )
+    parser.add_argument(
+        "--config", type=parse_path, default=None,
+        help="Category configuration path (supports ~)",
+    )
+    parser.add_argument(
+        "--output", type=parse_path, default=None,
+        help="HTML report output path (supports ~)",
+    )
     parser.add_argument(
         "--version",
         action="version",

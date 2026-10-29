@@ -13,9 +13,9 @@ _REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPOSITORY_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPOSITORY_ROOT))
 
+from timetracker import __version__
 from timetracker.database import ActivityDatabase
 from timetracker.models import ActivityState
-
 
 def demo_rows() -> list[tuple[ActivityState, datetime, datetime]]:
     """Return the same fictional periods on every invocation."""
@@ -73,6 +73,11 @@ def generate_demo_database(output_directory: str | Path) -> Path:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Generate a fictional activity database in an explicit directory."
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
     )
     parser.add_argument(
         "--output",

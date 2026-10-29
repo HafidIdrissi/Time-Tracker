@@ -60,7 +60,25 @@ paths, or private window titles are shown.
 Local Time Tracker is deliberately focused: a straightforward Windows desktop
 application for people who want useful activity insights without creating an
 account or operating a server.
+### Choosing How to Run Time-Tracker (Windows)
 
+Choose the setup mode that best fits your workflow:
+
+| Feature / Consideration | Standard Installer (`.exe`) | Portable ZIP (`.zip`) | Run from Source |
+| :--- | :--- | :--- | :--- |
+| **Best For** | Daily desktop use with Start Menu shortcut | USB drives / isolated folders | Developers & contributors |
+| **Prerequisites** | 64-bit Windows | 64-bit Windows | 64-bit Windows, Python 3.11+, `.venv` |
+| **Admin Rights Required?** | No (per-user install) | No | No |
+| **Setup Action** | Run setup wizard | Extract to a writable folder | Clone repo, set up venv & requirements |
+| **How to Launch** | Start Menu / Desktop shortcut | Run `LocalTimeTracker.exe` in extracted folder | Run via terminal within virtual environment |
+| **Data & Config Storage** | Standard app data directory | Inside extracted application directory | Local repository workspace |
+| **Uninstall Method** | Windows Settings / Add or remove programs | Delete extracted folder | Delete repository directory |
+| **Auto-Updates** | Manual download per release | Manual download per release | `git pull` |
+
+> **Note:**
+> - Packaged releases (`.exe` installer and `.zip` portable) run standalone and do **not** require Python to be installed.
+> - Do not run multiple installation modes simultaneously.
+> - For step-by-step setup walkthroughs, refer to the [Quick Start](#quick-start) section and [First Run Guide](docs/FIRST_RUN.md).
 ## Quick start
 
 1. Open the [latest release](https://github.com/HafidIdrissi/Time-Tracker/releases/latest).
@@ -181,6 +199,43 @@ analysis view; it does not start, stop, or modify tracking.
 Browser titles such as `Gmail - Google Chrome` are normalized to `Gmail`, so
 separate visits to the same tab are added together.
 
+#### Longest active session
+
+**Longest session** is the span of the joined active observations, not the
+total active time recorded inside that span. Active time is the sum of the
+recorded active periods. A gap of **30 seconds or less** can join active
+observations; a gap of **more than 30 seconds** starts a new session. An idle
+period also ends the current active session.
+
+For example, consider this fictional UTC timeline:
+
+| Time | Observation | Effect |
+| --- | --- | --- |
+| 09:00:00–09:01:00 | `Code.exe` | 60 seconds active |
+| 09:01:00–09:02:00 | Chrome | 60 seconds active; switching applications does not end the session |
+| 09:02:30–09:03:30 | Edge | starts exactly 30 seconds after the previous period, so it joins the session |
+| 09:04:01–09:05:01 | `Code.exe` | starts 31 seconds after the previous active period, so it starts a new session |
+| 09:05:01–09:06:01 | Idle | ends the active session |
+| 09:06:01–09:07:01 | `Code.exe` | starts another active session after idle |
+
+The first three active observations contain **180 seconds of active time**, but
+their joined session runs from 09:00:00 to 09:03:30, so the **session span is
+210 seconds (3 minutes 30 seconds)**. The 30-second gap is inside that span and
+is not counted as active time. The 31-second gap starts a separate session, and
+the idle period ends that session as well. Across the whole example, recorded
+active time is **300 seconds (5 minutes)**, while the longest session remains
+**210 seconds**.
+
+The metric describes joined foreground observations. It does **not** establish
+continuous use of one application, uninterrupted attention, or what the user
+was actually doing during a recorded active period.
+
+For the related distinction between active, idle and stopped time, see
+[the active/idle/stopped guidance](https://github.com/HafidIdrissi/Time-Tracker/issues/157).
+For sampling precision and short visits, see
+[the sampling guidance](https://github.com/HafidIdrissi/Time-Tracker/issues/211).
+
+
 ### Reports and data
 
 - generate an offline HTML report for a selected date;
@@ -204,6 +259,37 @@ Reset deletes periods from the SQLite database. Previously generated HTML
 reports are intentionally kept. The official uninstaller removes the local app
 data directory.
 
+### Dates and time zones
+
+Activity timestamps are stored in UTC (`+00:00`), and CSV and JSON exports
+write those stored values. Report and desktop day selection work differently:
+they use the calendar of the machine's current timezone (see
+[Reports and data](#reports-and-data) and
+[Command-line tools](#command-line-tools)). A period close to UTC midnight can
+therefore belong to a different local report date than its UTC date.
+
+The example below uses fictional timestamps and an illustrative fixed offset of
+UTC+02:00. The app itself uses your machine's real timezone, and this example
+does not show daylight-saving changes.
+
+| Stored or exported (UTC) | Local time at UTC+02:00 | Local report date |
+| --- | --- | --- |
+| `2026-10-06T21:30:00+00:00` | `2026-10-06T23:30:00+02:00` | October 6 |
+| `2026-10-06T22:30:00+00:00` | `2026-10-07T00:30:00+02:00` | October 7 |
+
+At UTC+02:00, the October 7 report covers the half-open UTC interval from
+`2026-10-06T22:00:00+00:00` up to, but not including,
+`2026-10-07T22:00:00+00:00`. A period that crosses a report boundary is
+clipped to the report interval instead of being assigned only by its start
+date. For example, a period from 21:30 to 22:30 UTC on October 6 adds 30
+minutes to the October 6 report and 30 minutes to the October 7 report.
+
+Only the UTC timestamps are stored. The timezone your machine used when a
+period was recorded is not stored. If you change the machine's timezone,
+reports and day selection for past activity follow the new local calendar, so
+the same recorded period can appear under a different date. Exports are not
+affected, because they contain the stored UTC values.
+
 ## Local data and privacy
 
 Installed application data is stored under:
@@ -214,8 +300,19 @@ Installed application data is stored under:
 └── reports\
 ```
 
+The installed app's personal category configuration is
+`%LOCALAPPDATA%\LocalTimeTracker\config.json`. In a source checkout,
+`config.json` is in the project directory. In portable mode, it is in the
+extracted application folder. If no personal `config.json` exists, the app
+uses the example configuration.
+
 When run directly from the repository, the equivalent folders are inside the
 project directory.
+
+Only one desktop window can track a given `activity.db`. If the application is
+already running for the same database, a second launch shows a message and
+closes without recording activity. Copies that use different databases, such
+as the installed, portable and source versions, are not blocked by this check.
 
 ### Portable Windows build
 
@@ -243,8 +340,8 @@ portable release, preserve the existing `data` directory if you want to keep
 your recorded activity.
 
 WARNING: Do not run the installed version and the portable version at the same
-time. Both versions can record activity simultaneously and may produce
-overlapping tracking data.
+time. They use separate databases, so the single-copy check does not stop them,
+and both versions would record the same activity.
 
 Window and browser-tab titles can contain sensitive information such as
 document names, searches, email subjects, account names, or private website
@@ -255,10 +352,16 @@ security.
 Read the complete [Privacy Policy](PRIVACY.md) and the instructions for
 [reporting security issues](SECURITY.md).
 
+Upgrading to a newer portable release while keeping your data:
+[docs/PORTABLE_UPGRADE.md](docs/PORTABLE_UPGRADE.md).
+
 ## Categories
 
 Activity is categorized with case-insensitive keywords from `config.json`. If
 that file does not exist, the application uses `config.example.json`.
+For the personal configuration's location in each app mode, see
+[Local data and privacy](#local-data-and-privacy). The preview command below
+requires `--config` and reads the exact file path you provide.
 
 ```json
 {
@@ -280,6 +383,7 @@ that file does not exist, the application uses `config.example.json`.
 ```
 
 The first matching category wins, so place specific rules before broad rules.
+Repeated object keys are rejected as a configuration error.
 Preview one synthetic application and title without tracking or a database:
 
 ```powershell
@@ -318,9 +422,10 @@ Launch the desktop application:
 python windows_app.py
 ```
 
-You can also double-click `Launch Time Tracker.cmd` after creating `.venv`. Do
-not run the source and installed versions simultaneously because two trackers
-would record overlapping periods.
+You can also double-click `Launch Time Tracker.cmd` after creating `.venv`. A
+second source window for the same project folder will not start. Do not run the
+source and installed versions simultaneously: they use separate databases, so
+both trackers would record the same activity.
 
 ## Command-line tools
 
@@ -339,6 +444,18 @@ python report.py --date 2026-07-20
 python report.py --from 2026-07-14 --to 2026-07-20
 python report.py --version
 ```
+
+Explicit `--database`, `--config` and `--output` paths support the `~` home-directory
+shortcut, including when it is quoted and the shell leaves it unexpanded:
+
+```powershell
+python report.py --database "~/Time Tracker/activity.db" --config "~/Time Tracker/config.json" --output "~/Time Tracker/report.html"
+```
+
+The command expands `~` itself. It does not expand environment variables such as
+`$HOME` or `%USERPROFILE%`; any expansion performed by your shell happens before
+the command receives the argument. Ordinary relative/absolute paths and default
+locations remain unchanged.
 
 Reports contain active and idle totals, categories, a timeline overview,
 application shares, window titles, and every recorded period. They contain no
@@ -431,14 +548,14 @@ matches your skills:
 | Your interests | Starting point | Environment |
 | --- | --- | --- |
 | Writing and onboarding | [Open documentation tasks](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20label%3Adocumentation%20label%3A%22good%20first%20issue%22) | Read and preview Markdown; verify any documented commands on their target platform |
-| Python and unit tests | [Category validation coverage](https://github.com/HafidIdrissi/Time-Tracker/issues/200) or [export format validation](https://github.com/HafidIdrissi/Time-Tracker/issues/202) | Python core; Windows or a configured non-Windows development environment |
-| HTML and accessibility | [Report table captions and scopes](https://github.com/HafidIdrissi/Time-Tracker/issues/108) | Python to generate fictional reports; browser and accessibility checks |
-| GitHub Actions | [Bound the core test job](https://github.com/HafidIdrissi/Time-Tracker/issues/203) | Workflow YAML and CI run evidence |
-| Windows testing | [Display scaling checks](https://github.com/HafidIdrissi/Time-Tracker/issues/171) | A real Windows desktop with disposable data |
+| Python and unit tests | [Find Python and testing tasks](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20label%3A%22good%20first%20issue%22%20Python) | Python core; Windows or a configured non-Windows development environment |
+| HTML and accessibility | [Find accessibility tasks](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20accessibility) | Python to generate fictional reports; browser and accessibility checks |
+| GitHub Actions | [Find GitHub Actions tasks](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20%22GitHub%20Actions%22) | Workflow YAML and CI run evidence |
+| Windows testing | [Find Windows testing tasks](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20Windows) | A real Windows desktop with disposable data |
 
-Issue links are examples, not reservations. Check the current assignee,
-comments and linked pull requests before choosing one. The [live starter
-list](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20label%3A%22good%20first%20issue%22)
+Issue links are examples, not reservations. Issue availability can change,
+so check the current assignee, comments and linked pull requests before
+choosing one. The [live starter list](https://github.com/HafidIdrissi/Time-Tracker/issues?q=is%3Aissue%20is%3Aopen%20no%3Aassignee%20label%3A%22good%20first%20issue%22)
 filters for open, unassigned issues; a maintainer may also have confirmed a
 claim in the discussion.
 

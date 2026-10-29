@@ -186,6 +186,129 @@ class ReportCliValidationTests(unittest.TestCase):
         self.assertNotIn("Report generated:", stdout)
 
 
+class ReportCliHomePathTests(unittest.TestCase):
+    def _run(self, arguments: list[str]) -> tuple[object, str, str]:
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with (
+            mock.patch("sys.argv", ["report.py", *arguments]),
+            mock.patch("sys.stdout", stdout),
+            mock.patch("sys.stderr", stderr),
+        ):
+            try:
+                code: object = report.main()
+            except SystemExit as exc:
+                code = exc.code
+        return code, stdout.getvalue(), stderr.getvalue()
+
+    def test_expanded_paths_reach_configuration_reader_and_report_writer(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            paths = {
+                "database": root / "activity.db",
+                "config": root / "config.json",
+                "output": root / "report.html",
+            }
+
+            def expand(path: Path) -> Path:
+                if path.parts[0] == "~":
+                    return root / path.relative_to("~")
+                return path
+
+            for option in paths:
+                with self.subTest(option=option):
+                    arguments = ["--date", "2026-07-20"]
+                    for name, path in paths.items():
+                        value = f"~/{path.name}" if name == option else str(path)
+                        arguments.extend([f"--{name}", value])
+                    with (
+                        mock.patch.object(Path, "expanduser", autospec=True, side_effect=expand),
+                        mock.patch("report.load_categorizer") as load,
+                        mock.patch("report.generate_report", return_value=paths["output"]) as generate,
+                    ):
+                        code, stdout, stderr = self._run(arguments)
+
+                    self.assertEqual(code, 0, stderr)
+                    self.assertIn("Report generated:", stdout)
+                    load.assert_called_once_with(paths["config"])
+                    generate.assert_called_once_with(
+                        database_path=paths["database"],
+                        output_path=paths["output"],
+                        start_day=date(2026, 7, 20),
+                        end_day=date(2026, 7, 20),
+                        categorizer=load.return_value,
+                    )
+
+    def test_ordinary_paths_and_environment_variable_text_stay_unchanged(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            prefixes = ["relative folder", directory, "$HOME", "%USERPROFILE%"]
+            for prefix in prefixes:
+                with self.subTest(prefix=prefix):
+                    database = Path(prefix) / "activity.db"
+                    config = Path(prefix) / "config.json"
+                    output = Path(prefix) / "report.html"
+                    with (
+                        mock.patch.object(Path, "expanduser", autospec=True, side_effect=lambda path: path),
+                        mock.patch("report.load_categorizer") as load,
+                        mock.patch("report.generate_report", return_value=output) as generate,
+                    ):
+                        code, _stdout, stderr = self._run([
+                            "--database", str(database),
+                            "--config", str(config),
+                            "--output", str(output),
+                        ])
+
+                    self.assertEqual(code, 0, stderr)
+                    load.assert_called_once_with(config)
+                    self.assertEqual(generate.call_args.kwargs["database_path"], database)
+                    self.assertEqual(generate.call_args.kwargs["output_path"], output)
+
+    def test_default_paths_are_not_home_expanded(self) -> None:
+        with (
+            mock.patch.object(Path, "expanduser", side_effect=AssertionError("default path expanded")),
+            mock.patch.object(Path, "exists", return_value=False),
+            mock.patch("report.load_categorizer") as load,
+            mock.patch("report.generate_report", return_value=Path("reports/report-2026-07-20.html")) as generate,
+        ):
+            code, _stdout, stderr = self._run(["--date", "2026-07-20"])
+
+        self.assertEqual(code, 0, stderr)
+        load.assert_called_once_with(Path("config.example.json"))
+        self.assertEqual(generate.call_args.kwargs["database_path"], Path("data/activity.db"))
+        self.assertEqual(generate.call_args.kwargs["output_path"], Path("reports/report-2026-07-20.html"))
+
+    def test_invalid_date_arguments_do_not_read_or_write_home_paths(self) -> None:
+        invalid_arguments = [
+            ["--date", "not-a-date"],
+            ["--to", "2026-07-20"],
+            ["--date", "2026-07-20", "--from", "2026-07-01"],
+            ["--from", "2026-07-20", "--to", "2026-07-01"],
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for arguments in invalid_arguments:
+                with self.subTest(arguments=arguments):
+                    with (
+                        mock.patch.object(Path, "expanduser", autospec=True,
+                                          side_effect=lambda path: root / path.relative_to("~")),
+                        mock.patch("report.load_categorizer") as load,
+                        mock.patch("report.generate_report") as generate,
+                    ):
+                        code, stdout, stderr = self._run([
+                            "--database", "~/activity.db",
+                            "--config", "~/config.json",
+                            "--output", "~/report.html",
+                            *arguments,
+                        ])
+
+                    self.assertEqual(code, 2)
+                    self.assertIn("error:", stderr)
+                    self.assertNotIn("Traceback", stderr)
+                    self.assertEqual(stdout, "")
+                    load.assert_not_called()
+                    generate.assert_not_called()
+
+
 class ReportCliFilesystemPathTests(unittest.TestCase):
     """End-to-end guard for paths with spaces and non-ASCII characters.
 
