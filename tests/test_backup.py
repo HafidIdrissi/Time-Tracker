@@ -158,8 +158,10 @@ class BackupTests(unittest.TestCase):
         source_bytes: bytes,
         sibling: Path,
     ) -> None:
-        with self.assertRaises(ValueError) as caught:
-            backup_activity_database(source, destination)
+        with mock.patch("timetracker.backup.tempfile.mkstemp") as mkstemp:
+            with self.assertRaises(ValueError) as caught:
+                backup_activity_database(source, destination)
+            mkstemp.assert_not_called()
         self.assertIn("different file", str(caught.exception))
         self.assertEqual(source.read_bytes(), source_bytes)
         self.assertEqual(self._rows(source, start), ["Fictional notes"])
