@@ -8,6 +8,7 @@ import sys
 import time
 from datetime import date, timedelta
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
@@ -17,13 +18,94 @@ from timetracker.database import ActivityDatabase
 from timetracker.models import ActivityState
 
 
-def record(output: Path) -> None:
+def cleanup_recorder(
+    process: subprocess.Popen | None,
+    fixture: Any,
+    *,
+    primary_error: BaseException | None = None,
+) -> None:
+    """Clean up the recording subprocess and ensure fixture cleanup runs unconditionally.
+
+    If an unresponsive child ignores terminate(), falls back to kill().
+    If terminate() or kill() fails:
+      - If primary_error is set (recording already failed), reports the secondary cleanup
+        failure to stderr and retains primary_error as the primary diagnostic.
+      - If primary_error is None, propagates the cleanup failure.
+    fixture.doCleanups() runs in all execution paths.
+    """
+    cleanup_error: BaseException | None = None
+    try:
+        if process is not None and process.poll() is None:
+            try:
+                process.terminate()
+                try:
+                    process.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    print(
+                        "Recording process did not exit after terminate; killing.",
+                        file=sys.stderr,
+                    )
+                    process.kill()
+                    process.wait(timeout=5)
+            except BaseException as exc:
+                cleanup_error = exc
+    finally:
+        fixture.doCleanups()
+
+    if cleanup_error is not None:
+        if primary_error is not None:
+            print(
+                f"Secondary cleanup failure after recording error: {cleanup_error}",
+                file=sys.stderr,
+            )
+        else:
+            raise cleanup_error
+
+def _check_recording_outputs(output: Path, *, overwrite: bool) -> None:
+    """Reject existing recorder outputs unless overwrite is explicit."""
+    if overwrite:
+        return
+
+    filenames = (
+        "LocalTimeTracker-demo.mp4",
+        "LocalTimeTracker-demo.txt",
+        "recording.log",
+    )
+
+    for filename in filenames:
+        path = output.joinpath(filename)
+        if path.is_file():
+            raise RuntimeError(
+                f"File {path} already exists. "
+                "Aborting demo. Use --overwrite to replace existing recordings."
+            )
+
+def _resolve_recording_tools() -> tuple[str, str]:
+    """
+    Resolve FFmpeg and FFprobe paths.
+
+    Raises:
+        RuntimeError: If either executable cannot be found.
+    """
     ffmpeg = shutil.which("ffmpeg")
+    probe = shutil.which("ffprobe")
+
     if not ffmpeg:
         raise RuntimeError("Install FFmpeg to record the Windows demo.")
+    if not probe:
+        raise RuntimeError("FFprobe is required to validate the recording.")
+
+    return ffmpeg, probe
+
+def record(output: Path, overwrite: bool = False) -> None:
+    _check_recording_outputs(output, overwrite=overwrite)
+
+    ffmpeg, probe = _resolve_recording_tools()
+    
     output.mkdir(parents=True, exist_ok=True)
     fixture = NativeDesktopTests("test_tracker_titles_analysis_reports_stop_restart_and_reset")
     process = None
+    primary_error: BaseException | None = None
     try:
         fixture.setUp()
         app, root = fixture.app, fixture.root
@@ -83,9 +165,6 @@ def record(output: Path) -> None:
                 raise RuntimeError("FFmpeg failed; inspect recording.log.")
         if path.stat().st_size < 10000:
             raise RuntimeError("Demo video is empty.")
-        probe = shutil.which("ffprobe")
-        if not probe:
-            raise RuntimeError("FFprobe is required to validate the recording.")
         duration = float(subprocess.check_output(
             [probe, "-v", "error", "-show_entries", "format=duration",
              "-of", "default=noprint_wrappers=1:nokey=1", str(path)],
@@ -103,14 +182,21 @@ def record(output: Path) -> None:
             encoding="utf-8",
         )
         print(f"Validated fictional native demo: {duration:.2f}s, {path.stat().st_size} bytes")
+    except BaseException as exc:
+        primary_error = exc
+        raise
     finally:
-        if process is not None and process.poll() is None:
-            process.terminate()
-            process.wait(timeout=10)
-        fixture.doCleanups()
+        cleanup_recorder(process, fixture, primary_error=primary_error)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=Path("demo"))
-    record(parser.parse_args().output.resolve())
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow overwriting existing recording output files.",
+    )
+
+    args = parser.parse_args()
+    record(args.output.resolve(), overwrite=args.overwrite)

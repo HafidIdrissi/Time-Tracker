@@ -19,6 +19,7 @@ from timetracker.backup import backup_activity_database as copy_activity_databas
 from timetracker.categories import CategoryConfigError, load_categorizer
 from timetracker.database import ActivityDatabase
 from timetracker.exporting import export_activity
+from timetracker.instance_lock import DatabaseLock
 from timetracker.models import ActivityPeriod, ActivitySnapshot
 from timetracker.preferences import load_tracking_preferences, save_tracking_preferences
 from timetracker.reporting import (
@@ -156,6 +157,8 @@ class TimeTrackerApp:
         self.analysis_average_text = tk.StringVar(value="0 min")
         self.analysis_longest_text = tk.StringVar(value="0 min")
         self.report_date = tk.StringVar(value=date.today().isoformat())
+        self.report_status_text = tk.StringVar(value="")
+        self.report_output_path: str | None = None
 
         self._configure_window()
         self._configure_styles()
@@ -424,7 +427,7 @@ class TimeTrackerApp:
         report_card = ttk.Frame(reports_tab, style="Card.TFrame", padding=(20, 18))
         report_card.pack(fill="x", pady=(0, 14))
         ttk.Label(report_card, text="VIEW A DAY", style="CardTitle.TLabel").grid(
-            row=0, column=0, columnspan=3, sticky="w"
+            row=0, column=0, columnspan=4, sticky="w"
         )
         ttk.Label(
             report_card,
@@ -432,8 +435,8 @@ class TimeTrackerApp:
             background="#ffffff",
             foreground="#475569",
         ).grid(row=1, column=0, sticky="w", pady=(12, 4))
-        date_entry = ttk.Entry(report_card, textvariable=self.report_date, width=18)
-        date_entry.grid(row=2, column=0, sticky="w")
+        self.report_date_entry = ttk.Entry(report_card, textvariable=self.report_date, width=18)
+        self.report_date_entry.grid(row=2, column=0, sticky="w")
         self.report_button = ttk.Button(
             report_card,
             text="Generate and open report",
@@ -441,13 +444,28 @@ class TimeTrackerApp:
             style="Accent.TButton",
         )
         self.report_button.grid(row=2, column=1, sticky="w", padx=(12, 0))
+        self.report_copy_button = ttk.Button(
+            report_card,
+            text="Copy report path",
+            command=self.copy_report_path,
+            style="App.TButton",
+            state="disabled",
+        )
+        self.report_copy_button.grid(row=2, column=2, sticky="w", padx=(10, 0))
         ttk.Button(
             report_card,
             text="Open reports folder",
             command=self.open_reports_directory,
             style="App.TButton",
-        ).grid(row=2, column=2, sticky="w", padx=(10, 0))
-        report_card.columnconfigure(3, weight=1)
+        ).grid(row=2, column=3, sticky="w", padx=(10, 0))
+        report_card.columnconfigure(4, weight=1)
+        ttk.Label(
+            report_card,
+            textvariable=self.report_status_text,
+            background="#ffffff",
+            foreground="#475569",
+            wraplength=900,
+        ).grid(row=3, column=0, columnspan=5, sticky="w", pady=(10, 0))
 
         data_card = ttk.Frame(reports_tab, style="Card.TFrame", padding=(20, 18))
         data_card.pack(fill="x")
@@ -795,14 +813,27 @@ class TimeTrackerApp:
                         self.application_text.set(application)
                         self.window_text.set(window_title)
                 elif kind == "report_ready":
-                    self.report_button.configure(state="normal")
+                    output_path = str(payload)
+                    self.report_output_path = output_path
+                    self.report_copy_button.configure(state="normal")
+                    self.report_status_text.set(f"Report generated: {output_path}")
                     try:
-                        os.startfile(str(payload))
-                    except OSError as exc:
-                        messagebox.showerror("Unable to open", str(exc))
-                elif kind == "report_error":
+                        os.startfile(output_path)
+                    except OSError:
+                        self.report_status_text.set(
+                            f"Report generated: {output_path}"
+                            " (could not open automatically)"
+                        )
                     self.report_button.configure(state="normal")
-                    messagebox.showerror("Unable to generate report", str(payload))
+                    self.report_date_entry.configure(state="normal")
+                elif kind == "report_error":
+                    self.report_output_path = None
+                    self.report_copy_button.configure(state="disabled")
+                    self.report_status_text.set(
+                        f"Report generation failed: {payload}"
+                    )
+                    self.report_button.configure(state="normal")
+                    self.report_date_entry.configure(state="normal")
         except queue.Empty:
             pass
         if not self.closing:
@@ -1239,17 +1270,30 @@ class TimeTrackerApp:
 
     def generate_selected_report(self) -> None:
         try:
-            selected_day = date.fromisoformat(self.report_date.get().strip())
-        except ValueError:
+            selected_day = date.fromisoformat(str(self.report_date.get()).strip())
+        except (TypeError, ValueError):
             messagebox.showwarning("Invalid date", "Use the YYYY-MM-DD format.")
             return
         self.report_button.configure(state="disabled")
+        self.report_date_entry.configure(state="disabled")
+        self.report_output_path = None
+        self.report_copy_button.configure(state="disabled")
+        self.report_status_text.set("Generating report\u2026")
         threading.Thread(
             target=self._report_worker,
             args=(selected_day,),
             name="report-generator",
             daemon=True,
         ).start()
+
+    def copy_report_path(self) -> None:
+        if self.report_output_path is None:
+            return
+        try:
+            self.root.clipboard_clear()
+            self.root.clipboard_append(self.report_output_path)
+        except tk.TclError as exc:
+            messagebox.showerror("Unable to copy report path", str(exc))
 
     def _report_worker(self, selected_day: date) -> None:
         try:
@@ -1280,13 +1324,34 @@ class TimeTrackerApp:
             self.root.destroy()
 
 
+def show_already_running() -> None:
+    root = tk.Tk()
+    root.withdraw()
+    messagebox.showinfo(
+        "Local Time Tracker",
+        "Local Time Tracker is already running for this database:\n"
+        f"{DATABASE_PATH}\n\n"
+        "Use the window that is already open. This copy will close "
+        "without recording activity.",
+        parent=root,
+    )
+    root.destroy()
+
+
 def main() -> int:
     if sys.platform != "win32":
         print("This graphical application is available on Windows only.")
         return 1
-    root = tk.Tk()
-    TimeTrackerApp(root)
-    root.mainloop()
+    lock = DatabaseLock(DATABASE_PATH)
+    if not lock.acquire():
+        show_already_running()
+        return 1
+    try:
+        root = tk.Tk()
+        TimeTrackerApp(root)
+        root.mainloop()
+    finally:
+        lock.release()
     return 0
 
 

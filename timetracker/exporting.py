@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import json
+import math
 import os
 import tempfile
 from pathlib import Path
@@ -76,8 +77,15 @@ def export_activity(database_path: str | Path, destination: str | Path, file_for
                 writer.writeheader()
                 writer.writerows(rows)
         else:
+            for row_number, row in enumerate(rows, start=1):
+                duration = row["duration_seconds"]
+                if isinstance(duration, float) and not math.isfinite(duration):
+                    raise ValueError(
+                        "JSON export row "
+                        f"{row_number} has a non-finite duration_seconds value"
+                    )
             temporary_path.write_text(
-                json.dumps(rows, ensure_ascii=False, indent=2) + "\n",
+                json.dumps(rows, ensure_ascii=False, indent=2, allow_nan=False) + "\n",
                 encoding="utf-8",
             )
         temporary_path.replace(destination_path)

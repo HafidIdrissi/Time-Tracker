@@ -63,6 +63,11 @@ py -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
+If your Windows environment does not have the `py` launcher, see
+[Troubleshoot a missing Windows py launcher](SUPPORT.md#troubleshoot-a-missing-windows-py-launcher)
+to create `.venv` with an existing Python executable without changing security
+settings.
+
 `upstream` is optional. Use it when you want to update your fork from the
 original repository. Create a focused branch before editing:
 
@@ -101,6 +106,8 @@ Run all tests from the repository root:
 ```
 
 Use that same `python.exe` for every test command in this repository.
+To configure test discovery and run tests directly in VS Code, see
+[docs/VSCODE_DEVELOPMENT.md](docs/VSCODE_DEVELOPMENT.md).
 
 For interface changes, also verify that tracking starts, foreground titles
 update, Usage analysis loads, an offline report can be generated, and tracking
@@ -121,6 +128,9 @@ installer or uninstaller.
 
 For the path from a Windows sample to the database, dashboard, and offline
 report, read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+Before cleaning a checkout, read the guide to
+[preserving local data](docs/LOCAL_CHECKOUT_DATA.md).
 
 ## Project principles
 

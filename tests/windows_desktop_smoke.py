@@ -123,6 +123,7 @@ class NativeDesktopTests(TestCase):
             yield from self.widgets(child)
 
     def test_tracker_titles_analysis_reports_stop_restart_and_reset(self) -> None:
+        self.assertEqual(str(self.app.report_copy_button.cget("state")), "disabled")
         self.seed()
         self.app.start_tracking()
         self.wait(lambda: self.app.status_text.get() == "Running")
@@ -133,9 +134,39 @@ class NativeDesktopTests(TestCase):
         self.assertFalse(self.app.analysis_error)
         self.assertGreaterEqual(self.app.analysis_data.active_seconds, 300)
         self.app.generate_selected_report()
+        self.assertEqual(str(self.app.report_copy_button.cget("state")), "disabled")
         report = self.reports / f"report-{date.today().isoformat()}.html"
         self.wait(lambda: report.exists() and self.open_file.called)
         self.assertIn("Fictional title", report.read_text(encoding="utf-8"))
+        self.assertIn("Report generated:", self.app.report_status_text.get())
+        status_path = Path(self.app.report_status_text.get().removeprefix("Report generated: ").strip())
+        self.assertTrue(status_path.samefile(report))
+        generated_path = self.app.report_output_path
+        self.assertIsNotNone(generated_path)
+        self.assertTrue(Path(generated_path).samefile(report))
+        self.assertEqual(str(self.app.report_button.cget("state")), "normal")
+        self.assertEqual(str(self.app.report_copy_button.cget("state")), "normal")
+        self.assertEqual(str(self.app.report_date_entry.cget("state")), "normal")
+        with (
+            mock.patch.object(self.root, "clipboard_clear") as clipboard_clear,
+            mock.patch.object(self.root, "clipboard_append") as clipboard_append,
+        ):
+            self.app.notebook.select(2)
+            self.root.update()
+            self.app.report_date_entry.focus_force()
+            self.root.update()
+            self.assertEqual(str(self.root.focus_get()), str(self.app.report_date_entry))
+            self.app.report_date_entry.event_generate("<KeyPress-Tab>")
+            self.root.update()
+            self.assertEqual(str(self.root.focus_get()), str(self.app.report_button))
+            self.app.report_button.event_generate("<KeyPress-Tab>")
+            self.root.update()
+            self.assertEqual(str(self.root.focus_get()), str(self.app.report_copy_button))
+            self.app.report_copy_button.event_generate("<KeyPress-space>")
+            self.app.report_copy_button.event_generate("<KeyRelease-space>")
+            self.root.update()
+            clipboard_clear.assert_called_once_with()
+            clipboard_append.assert_called_once_with(generated_path)
         self.showerror.assert_not_called()
         self.stop()
         self.app.start_tracking()

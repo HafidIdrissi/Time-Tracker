@@ -1,4 +1,7 @@
 # First run on Windows
+[Leer esta guía en español](FIRST_RUN.es.md)
+
+> **Tip:** Not sure which build to download? Review the [Installation Comparison Table](../README.md#choosing-how-to-run-time-tracker-windows) in the README to choose between the standard installer, portable ZIP, or running from source.
 
 This walkthrough takes about five minutes with the current Windows installer.
 The examples below are synthetic. Local Time Tracker does not upload activity,
@@ -52,8 +55,9 @@ cards, chart, and rankings describe the same local day. An empty chart says
 
 Open **Reports and data**. Keep today's date in **Date (YYYY-MM-DD)**, then
 press **Generate and open report**. The report is an HTML file in the local
-reports folder. **Open reports folder** shows that folder. The report does not
-need a network connection.
+reports folder. After it is generated, **Copy report path** copies its exact
+file path when clicked or activated from the keyboard. **Open reports folder**
+shows that folder. The report does not need a network connection.
 
 ## 6. Stop and start
 

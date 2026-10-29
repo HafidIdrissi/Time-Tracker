@@ -74,6 +74,52 @@ class PreferenceTests(unittest.TestCase):
             )
             self.assertEqual(load_tracking_preferences(path), ("5", "10"))
 
+
+    def test_invalid_choices_are_rejected_before_filesystem_writes(self) -> None:
+        invalid_pairs = (("4", "3"), ("5", "4"))
+
+        for sample_seconds, idle_minutes in invalid_pairs:
+            for existing_file in (True, False):
+                with self.subTest(
+                    sample_seconds=sample_seconds,
+                    idle_minutes=idle_minutes,
+                    existing_file=existing_file,
+                ):
+                    with tempfile.TemporaryDirectory() as directory:
+                        root = Path(directory)
+                        if existing_file:
+                            path = root / "preferences.json"
+                            original_bytes = (
+                                b'{"sample_seconds": "5", "idle_minutes": "10"}\n'
+                            )
+                            path.write_bytes(original_bytes)
+                        else:
+                            path = root / "not-created" / "preferences.json"
+
+                        with (
+                            patch.object(Path, "mkdir") as mkdir,
+                            patch.object(Path, "write_text") as write_text,
+                            patch.object(Path, "write_bytes") as write_bytes,
+                            patch("timetracker.preferences.os.replace") as replace,
+                        ):
+                            with self.assertRaises(ValueError):
+                                save_tracking_preferences(
+                                    path, sample_seconds, idle_minutes
+                                )
+
+                        mkdir.assert_not_called()
+                        write_text.assert_not_called()
+                        write_bytes.assert_not_called()
+                        replace.assert_not_called()
+
+                        if existing_file:
+                            self.assertEqual(path.read_bytes(), original_bytes)
+                            self.assertFalse(path.with_name(path.name + ".partial").exists())
+                        else:
+                            self.assertFalse(path.parent.exists())
+                            self.assertFalse(path.with_name(path.name + ".partial").exists())
+
+
 if __name__ == "__main__":
     unittest.main()
 
