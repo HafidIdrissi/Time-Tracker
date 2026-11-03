@@ -53,11 +53,7 @@ cards, chart, and rankings describe the same local day. An empty chart says
 
 ## 5. Generate an offline report
 
-Open **Reports and data**. Keep today's date in **Date (YYYY-MM-DD)**, then
-press **Generate and open report**. The report is an HTML file in the local
-reports folder. After it is generated, **Copy report path** copies its exact
-file path when clicked or activated from the keyboard. **Open reports folder**
-shows that folder. The report does not need a network connection.
+Open **Reports and data**. Keep today's date in **Date (YYYY-MM-DD)**, then press **Generate and open report**. The report is an HTML file in the local reports folder. By default, **Open report after generating** is checked for the current session, which automatically opens the generated report in your default browser. Uncheck it if you only want to generate the file without opening the browser. After it is generated, **Copy report path** copies its exact file path when clicked or activated from the keyboard. **Open reports folder** shows that folder. The report does not need a network connection.
 
 ## 6. Stop and start
 
