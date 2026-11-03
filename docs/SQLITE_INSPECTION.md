@@ -19,7 +19,7 @@ spaces and Unicode characters:
 ```
 
 The generator refuses to overwrite an existing database. Its five fictional
-periods are dated 16–17 September 2026 (UTC): 145 minutes active in the morning,
+periods are dated 16–17 September 2026 (UTC): 105 minutes active in the morning,
 15 minutes idle, 40 minutes active in the evening, and 40 minutes active across
 midnight. The expected totals are **185 minutes active** and **15 minutes idle**.
 
