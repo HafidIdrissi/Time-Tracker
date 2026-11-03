@@ -33,7 +33,13 @@ class BackupDialogTests(unittest.TestCase):
             ):
                 app.backup_activity_database()
             showerror.assert_called_once()
-            self.assertEqual(showerror.call_args.args[0], "Unable to back up")
+            title, body = showerror.call_args.args
+            self.assertEqual(title, "Unable to back up")
+            # The body has to be pinned, not just the title: restoring the old
+            # wording ("No backup file was kept") would otherwise still pass,
+            # even though an existing destination was in fact left in place.
+            self.assertIn("This backup attempt did not complete", body)
+            self.assertNotIn("No backup file was kept", body)
             showinfo.assert_not_called()
             with ActivityDatabase(source) as database:
                 self.assertEqual(database.recent_periods(), [])
