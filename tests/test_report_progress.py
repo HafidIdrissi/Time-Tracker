@@ -4,6 +4,7 @@ All activity is fictional. No real user data or activity titles are used.
 """
 from __future__ import annotations
 
+import os
 import queue
 import sys
 import tempfile
@@ -112,6 +113,7 @@ class ReportProgressTests(unittest.TestCase):
         self.app.report_date.set("2026-07-20")
         with mock.patch("threading.Thread") as thread_cls:
             self.app.generate_selected_report()
+            self.app.open_report_var = FakeStringVar("1")
             thread_cls.assert_called_once()
             call_kwargs = thread_cls.call_args.kwargs
             self.assertEqual(call_kwargs.get("target"), self.app._report_worker)
@@ -288,6 +290,62 @@ class ReportProgressTests(unittest.TestCase):
         self.assertEqual(kind, "report_error")
         self.assertIsInstance(payload, str)
 
+    def test_default_enabled_opens_generated_report(self) -> None:
+        """Confirm default state opens the generated report via os.startfile."""
+        self._seed()
+        self.app.open_report_var = FakeStringVar("1")
+        self.app.generate_selected_report()
+        kind, payload = self.app.messages.get(timeout=5)
+        self.assertEqual(kind, "report_ready")
+        self.app.messages.put((kind, payload))
+        self._process_once()
+        self.startfile.assert_called_once_with(str(payload))
 
+    def test_disabled_generates_report_without_opening(self) -> None:
+        """Confirm disabling the option skips os.startfile while showing path."""
+        self._seed()
+        self.app.open_report_var = FakeStringVar("0")
+        self.app.generate_selected_report()
+        kind, payload = self.app.messages.get(timeout=5)
+        self.assertEqual(kind, "report_ready")
+        self.app.messages.put((kind, payload))
+        self._process_once()
+        self.startfile.assert_not_called()
+        self.assertEqual(self.app.report_output_path, str(payload))
+        self.assertEqual(str(self.app.report_button.cget("state")), "normal")
+        self.assertEqual(str(self.app.report_copy_button.cget("state")), "normal")
+
+    def test_in_flight_toggle_does_not_affect_active_request(self) -> None:
+        """Confirm toggling the checkbox after dispatch does not alter the in-flight request."""
+        self._seed()
+        self.app.open_report_var = FakeStringVar("0")
+        self.app.generate_selected_report()
+        # Toggle checkbox while generation is in flight
+        self.app.open_report_var = FakeStringVar("1")
+        kind, payload = self.app.messages.get(timeout=5)
+        self.assertEqual(kind, "report_ready")
+        self.app.messages.put((kind, payload))
+        self._process_once()
+        self.startfile.assert_not_called()
+
+    def test_successive_requests_use_independent_settings(self) -> None:
+        """Confirm sequential requests apply their own captured settings."""
+        self._seed()
+        # Request 1: Disabled
+        self.app.open_report_var = FakeStringVar("0")
+        self.app.generate_selected_report()
+        kind1, payload1 = self.app.messages.get(timeout=5)
+        self.app.messages.put((kind1, payload1))
+        self._process_once()
+        self.startfile.assert_not_called()
+
+        # Request 2: Enabled
+        self.app.open_report_var = FakeStringVar("1")
+        self.app.generate_selected_report()
+        kind2, payload2 = self.app.messages.get(timeout=5)
+        self.app.messages.put((kind2, payload2))
+        self._process_once()
+        self.startfile.assert_called_once_with(str(payload2))
+    
 if __name__ == "__main__":
     unittest.main()
