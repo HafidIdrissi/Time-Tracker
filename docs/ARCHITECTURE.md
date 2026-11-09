@@ -39,6 +39,10 @@ would precede its start is clamped, so stored durations stay non-negative.
 `periods_between()` returns stored rows that overlap a half-open range. It
 does not clip them.
 
+For a consistent copy and a read-only SQL walkthrough, see
+[Inspect a SQLite backup safely](SQLITE_INSPECTION.md). Do not copy an open
+WAL database by filename alone.
+
 ## Clipping, categories, and rendering
 
 `timetracker/reporting.py` owns clipping and HTML rendering. `collect_periods()`
