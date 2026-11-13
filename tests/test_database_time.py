@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import tempfile
 import unittest
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, tzinfo
 from pathlib import Path
 
 from timetracker.database import ActivityDatabase, to_storage, to_utc
@@ -85,6 +85,45 @@ class DatabaseTimeTests(unittest.TestCase):
 
                 with self.assertRaises(ValueError):
                     database.recent_periods(limit=-1)
+
+
+class _OffsetlessTzinfo(tzinfo):
+    """Aware tzinfo that deliberately returns None from utcoffset()."""
+
+    def utcoffset(self, dt):  # type: ignore[override]
+        return None
+
+    def dst(self, dt):  # type: ignore[override]
+        return None
+
+    def tzname(self, dt):  # type: ignore[override]
+        return "OFFSETLESS"
+
+
+class DatabaseOffsetlessTzinfoTests(unittest.TestCase):
+    def test_to_utc_and_to_storage_reject_offsetless_tzinfo(self) -> None:
+        offsetless = datetime(2026, 3, 1, 12, 0, tzinfo=_OffsetlessTzinfo())
+        with self.assertRaises(ValueError) as raised:
+            to_utc(offsetless)
+        self.assertIn("timezone-aware", str(raised.exception))
+        with self.assertRaises(ValueError):
+            to_storage(offsetless)
+
+    def test_create_period_rejects_offsetless_without_mutation(self) -> None:
+        start = datetime(2026, 3, 1, 12, 0, tzinfo=timezone.utc)
+        offsetless = datetime(2026, 3, 1, 13, 0, tzinfo=_OffsetlessTzinfo())
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "activity.db"
+            with ActivityDatabase(path) as database:
+                ok_id = database.create_period(ActivityState("ok.exe", "Valid"), start)
+                with self.assertRaises(ValueError):
+                    database.create_period(ActivityState("bad.exe", "Offsetless"), offsetless)
+                with self.assertRaises(ValueError):
+                    database.periods_between(offsetless, start + timedelta(hours=1))
+                periods = database.recent_periods(limit=10)
+                self.assertEqual([p.id for p in periods], [ok_id])
+                self.assertEqual(periods[0].application, "ok.exe")
+
 
 if __name__ == "__main__":
     unittest.main()
