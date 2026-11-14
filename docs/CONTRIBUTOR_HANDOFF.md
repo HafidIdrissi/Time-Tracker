@@ -25,7 +25,7 @@
 - Record the CI status and any pending approvals
 - Do not imply that work has passed review or CI without evidence
 
-## REPRODUCTION INSTRUCTIONS 
+## REPRODUCTION INSTRUCTIONS
 - **Environment**: *Describe the environment or setup required*
 - **Steps**: *Provide exact steps or commands to reproduce the current state*
 - **Expected Result**: *Describe what should happen*
@@ -38,11 +38,12 @@
 ## RELEASE REQUEST
 - *If you are unable to continue working on the issue, explicitly state that you are requesting to have your claim released so another contributor can take over*
 
-# *TEST HANDOFF EXAMPLE*
-- **Issue:** [#453](https://github.com/HafidIdrissi/Time-Tracker/issues/453)
-- **PR:** [#932](https://github.com/HafidIdrissi/Time-Tracker/pull/932)
-- **Branch:** `feature/fix-activity-tracking`
-- **Last Reviewed SHA:** `abc1234`
+# *TEST HANDOFF EXAMPLE (HYPOTHETICAL)*
+*A fictional example demonstrating how to document a code-related handoff.*
+- **Issue:** `EXAMPLE-ISSUE-1`
+- **PR:** `EXAMPLE-PR-1`
+- **Branch:** `example/fix-activity-tracking`
+- **Last Reviewed SHA:** `EXAMPLE-SHA-1`
 
 ## WORK ACCOMPLISHED
 ### Implemented Work
@@ -62,7 +63,7 @@
 
 ### Maintainer Review / CI Status
 - Awaiting maintainer review
-- [Workflow](https://github.com/HafidIdrissi/Time-Tracker/actions/runs/41167137614) is awaiting maintainer approval to run
+- Example workflow run `EXAMPLE-WORKFLOW-1` is hypothetically awaiting maintainer approval to run
 - A maintainer has not yet reviewed the new validation
 - Compatibility with older activity records has not yet been verified
 
@@ -83,11 +84,12 @@ I am no longer able to actively work on this issue.
 Could a maintainer please release my claim so another contributor
 can pick it up? Thank you!
 
-# *DOC HANDOFF EXAMPLE*
-- **Issue:** [#454](https://github.com/HafidIdrissi/Time-Tracker/issues/454)
-- **PR:** [#933](https://github.com/HafidIdrissi/Time-Tracker/pull/933)
-- **Branch:** `docs/update-installation-guide`
-- **Last Reviewed SHA:** `def5678`
+# *DOC HANDOFF EXAMPLE (HYPOTHETICAL)*
+*A fictional example demonstrating how to document a documentation-related handoff.*
+- **Issue:** `EXAMPLE-ISSUE-2`
+- **PR:** `EXAMPLE-PR-2`
+- **Branch:** `example/update-installation-guide`
+- **Last Reviewed SHA:** `EXAMPLE-SHA-2`
 
 ## WORK ACCOMPLISHED
 ### Implemented Work
