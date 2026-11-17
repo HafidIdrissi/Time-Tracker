@@ -30,8 +30,9 @@ testing.
    you performed.
 
 If you become unavailable or blocked, leave a comment so the issue can be made
-available again. Claims with no update for seven days may be released after a
-maintainer check-in.
+available again. Any information you would like to pass off to future contributors should 
+be filled in through [CONTRIBUTOR_HANDOFF.md](docs/CONTRIBUTOR_HANDOFF.md). 
+Claims with no update for seven days may be released after a maintainer check-in. 
 
 The maintainer aims to acknowledge claim requests and review focused pull
 requests within two working days. Larger changes may take longer or require a
