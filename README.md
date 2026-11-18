@@ -436,6 +436,27 @@ python track.py
 python track.py --interval 2 --idle-after 300 --database data/activity.db
 ```
 
+The terminal tracker uses its own defaults and does not read
+`preferences.json`. The desktop application loads its saved sampling
+interval and idle threshold from `preferences.json`; missing or invalid
+preferences fall back to one second and three minutes.
+
+| Setting | Terminal tracker | Desktop application |
+| --- | --- | --- |
+| Sample interval | 5 seconds | 1 second by default |
+| Idle threshold | 180 seconds (3 minutes) | 3 minutes by default |
+| Reads `preferences.json` | No | Yes |
+
+To explicitly choose both timing values for the terminal tracker:
+
+```powershell
+python track.py --interval 5 --idle-after 180
+```
+
+Stop the terminal tracker with `Ctrl+C`. Do not run two trackers against
+the same database at the same time.
+
+
 Generate reports:
 
 ```powershell
