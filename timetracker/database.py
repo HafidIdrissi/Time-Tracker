@@ -12,7 +12,7 @@ from .models import ActivityPeriod, ActivityState
 def to_utc(value: datetime) -> datetime:
     """Return an aware datetime normalized to UTC."""
 
-    if value.tzinfo is None:
+    if value.tzinfo is None or value.utcoffset() is None:
         raise ValueError("A timezone-aware datetime is required")
     return value.astimezone(timezone.utc)
 
