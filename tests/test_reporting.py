@@ -237,6 +237,67 @@ class ReportingTests(unittest.TestCase):
             f"{long_start:%H:%M:%S}–{long_start + timedelta(minutes=45, seconds=30):%H:%M:%S}"' · steamwebhelper.exe · Mock Steam &amp; &lt;draft&gt; &quot;v1&quot; &gt; old'
         )
 
+    def test_application_and_category_labels_remain_literal_html_text(self) -> None:
+        start = datetime(2026, 7, 20, 9, 0, tzinfo=timezone.utc).astimezone()
+        application = 'notes & <editor> "v2".exe'
+        category = 'Work & <focus> "deep"'
+        title = "Fictional notes"
+        period = ReportPeriod(
+            application=application,
+            window_title=title,
+            started_at=start,
+            ended_at=start + timedelta(minutes=12),
+            duration_seconds=720,
+            is_idle=False,
+            category=category,
+            color="#aabbcc",
+        )
+        html = render_html([period], date(2026, 7, 20), date(2026, 7, 20))
+
+        table_parser = _TableCellParser()
+        table_parser.feed(html)
+        application_rows = table_parser.cells["Applications"]
+        self.assertEqual(len(application_rows), 1)
+        self.assertEqual(application_rows[0][0]["text"], application)
+        self.assertNotIn("onclick", application_rows[0][0]["attrs"])
+        self.assertNotIn("onerror", application_rows[0][0]["attrs"])
+
+        timeline_rows = table_parser.cells["Detailed timeline"]
+        self.assertEqual(len(timeline_rows), 1)
+        self.assertEqual(timeline_rows[0][2]["text"], category)
+        self.assertEqual(timeline_rows[0][3]["text"], application)
+
+        segment_parser = _SegmentTimelineParser()
+        segment_parser.feed(html)
+        self.assertEqual(len(segment_parser.titles), 1)
+        self.assertEqual(
+            segment_parser.titles[0],
+            f"{start:%H:%M:%S}–{start + timedelta(minutes=12):%H:%M:%S} · {application} · {title}",
+        )
+
+        self.assertIn("notes &amp; &lt;editor&gt; &quot;v2&quot;.exe", html)
+        self.assertIn("Work &amp; &lt;focus&gt; &quot;deep&quot;", html)
+        self.assertNotIn("<editor>", html)
+        self.assertNotIn("<focus>", html)
+        self.assertNotIn("onclick=", html)
+        self.assertNotIn("onerror=", html)
+
+        unicode_period = ReportPeriod(
+            application="éditeur.exe",
+            window_title="Notes",
+            started_at=start,
+            ended_at=start + timedelta(minutes=3),
+            duration_seconds=180,
+            is_idle=False,
+            category="Travail",
+            color="#112233",
+        )
+        unicode_html = render_html([unicode_period], date(2026, 7, 20), date(2026, 7, 20))
+        unicode_parser = _TableCellParser()
+        unicode_parser.feed(unicode_html)
+        self.assertEqual(unicode_parser.cells["Applications"][0][0]["text"], "éditeur.exe")
+        self.assertEqual(unicode_parser.cells["Detailed timeline"][0][2]["text"], "Travail")
+
 
 if __name__ == "__main__":
     unittest.main()
