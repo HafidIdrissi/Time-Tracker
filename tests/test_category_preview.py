@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -100,6 +103,81 @@ class CategoryPreviewTests(unittest.TestCase):
             self.assertIn("Duplicate", output)
             self.assertNotIn("#222222", output)
             self.assertEqual(before, config.read_bytes())
+
+    def test_subprocess_cli_accepts_unicode_paths_and_inputs(self) -> None:
+        repository = Path(__file__).resolve().parents[1]
+        script = repository / "preview_category.py"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config_dir = root / "réglages spéciaux"
+            config_dir.mkdir()
+            config = config_dir / "config café.json"
+            config.write_text(
+                json.dumps(
+                    {
+                        "categories": [
+                            {
+                                "name": "Notes",
+                                "color": "#0f172a",
+                                "keywords": ["σημειώσεις", "notes"],
+                            }
+                        ]
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+            before = config.read_bytes()
+            workdir = root / "cwd séparée"
+            workdir.mkdir()
+            environment = os.environ.copy()
+            environment.pop("PYTHONPATH", None)
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(script),
+                    "--config",
+                    str(config),
+                    "--application",
+                    "σημειώσεις.exe",
+                    "--title",
+                    "Fictional café notes",
+                ],
+                cwd=workdir,
+                env=environment,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                check=False,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertEqual(completed.stdout, "Notes\n")
+            self.assertEqual(config.read_bytes(), before)
+            self.assertFalse((workdir / "activity.db").exists())
+            self.assertFalse((root / "activity.db").exists())
+
+            missing = root / "absent" / "config.json"
+            missing_run = subprocess.run(
+                [
+                    sys.executable,
+                    str(script),
+                    "--config",
+                    str(missing),
+                    "--application",
+                    "notes.exe",
+                    "--title",
+                    "x",
+                ],
+                cwd=workdir,
+                env=environment,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                check=False,
+            )
+            self.assertNotEqual(missing_run.returncode, 0)
+            self.assertIn("Error:", missing_run.stderr)
+            self.assertNotIn("Traceback", missing_run.stderr)
 
 
 if __name__ == "__main__":
