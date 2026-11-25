@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import sqlite3
 import tempfile
 import unittest
@@ -462,6 +463,36 @@ class ExportTests(unittest.TestCase):
             self.assertEqual(json_rows, json_rows_again)
 
             self.assertEqual(snapshot(), before)
+
+    def test_hard_link_alias_destination_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = self._database(root)
+            source_bytes = source.read_bytes()
+            alias = root / "alias.db"
+            try:
+                os.link(source, alias)
+            except OSError as exc:
+                self.skipTest(f"hard link is not supported here: {exc}")
+            alias_bytes = alias.read_bytes()
+
+            with mock.patch("timetracker.exporting.tempfile.mkstemp") as mkstemp:
+                with self.assertRaises(ValueError) as caught:
+                    export_activity(source, alias, "json")
+                mkstemp.assert_not_called()
+            self.assertIn("different file", str(caught.exception))
+            self.assertEqual(source.read_bytes(), source_bytes)
+            self.assertEqual(alias.read_bytes(), alias_bytes)
+            self.assertEqual(list(root.glob("**/*.tmp")), [])
+            with ActivityDatabase(source) as database:
+                self.assertEqual(database.all_periods()[0].application, "notes.exe")
+
+            destination = root / "out.json"
+            export_activity(source, destination, "json")
+            self.assertTrue(destination.is_file())
+            self.assertEqual(source.read_bytes(), source_bytes)
+            self.assertEqual(alias.read_bytes(), alias_bytes)
+
 
 if __name__ == "__main__":
     unittest.main()
