@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import csv
 import json
 import sqlite3
@@ -12,8 +13,9 @@ from pathlib import Path
 from unittest import mock
 
 from timetracker.database import ActivityDatabase
-from timetracker.exporting import EXPORT_FIELDS, export_activity
+from timetracker.exporting import EXPORT_FIELDS, export_activity, period_row
 from timetracker.models import ActivityState
+
 
 
 class ExportTests(unittest.TestCase):
@@ -111,8 +113,8 @@ class ExportTests(unittest.TestCase):
 
                     with mock.patch.object(
                         ActivityDatabase,
-                        "all_periods",
-                        return_value=[invalid_period],
+                        "iter_periods",
+                        return_value=(period for period in [invalid_period]),
                     ):
                         with self.assertRaisesRegex(ValueError, "finite.*duration_seconds"):
                             export_activity(source, destination, "json")
@@ -129,6 +131,169 @@ class ExportTests(unittest.TestCase):
                     )
                     with ActivityDatabase(source) as database:
                         self.assertEqual(database.all_periods(), source_rows)
+
+    def test_mid_stream_failure_preserves_destination(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = self._database(root)
+
+            with ActivityDatabase(source) as database:
+                source_rows = database.all_periods()
+
+            def failing_iterator():
+                yield source_rows[0]
+                yield source_rows[1]
+                raise RuntimeError("Simulated read failure")
+
+            for file_format in ("csv", "json"):
+                with self.subTest(file_format=file_format):
+                    destination = root / f"out.{file_format}"
+                    original_destination = "keep existing export"
+                    destination.write_text(original_destination, encoding="utf-8")
+
+                    temporary_files_before = set(root.glob("*.tmp"))
+
+                    with mock.patch.object(
+                        ActivityDatabase,
+                        "iter_periods",
+                        return_value=failing_iterator(),
+                    ):
+                        with self.assertRaisesRegex(RuntimeError, "Simulated read failure"):
+                            export_activity(source, destination, file_format)
+
+                    self.assertEqual(
+                        destination.read_text(encoding="utf-8"),
+                        original_destination,
+                    )
+
+                    self.assertEqual(
+                        set(root.glob("*.tmp")),
+                        temporary_files_before,
+                    )
+
+    def test_cursor_closes_on_early_termination(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            source = self._database(Path(directory))
+
+            with ActivityDatabase(source) as database:
+                cursor = mock.MagicMock()
+                cursor.__iter__.return_value = iter([mock.Mock()])
+
+                with mock.patch.object(database, "connection") as connection:
+                    connection.execute.return_value = cursor
+
+                    with mock.patch.object(database, "_period_from_row"):
+                        periods = database.iter_periods()
+                        next(periods)
+                        cursor.close.assert_not_called()
+                        periods.close()
+                        cursor.close.assert_called_once()
+
+    def test_connection_closes_after_export(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = self._database(root)
+            database = ActivityDatabase(source)
+
+            with mock.patch(
+                "timetracker.exporting.ActivityDatabase",
+                return_value=database,
+            ):
+                export_activity(source, root / "mock_export_data.json", "json")
+
+            with self.assertRaises(sqlite3.ProgrammingError):
+                database.connection.execute("SELECT application FROM activity_periods")
+
+    def test_connection_closes_after_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = self._database(root)
+            database = ActivityDatabase(source)
+
+            with mock.patch(
+                "timetracker.exporting.ActivityDatabase",
+                return_value=database,
+            ):
+                with mock.patch(
+                    "timetracker.exporting.period_row",
+                    side_effect=RuntimeError("Conversion failed"),
+                ):
+                    with self.assertRaisesRegex(RuntimeError, "Conversion failed"):
+                        export_activity(source, root / "mock_export_data.json", "json")
+
+            with self.assertRaises(sqlite3.ProgrammingError):
+                database.connection.execute("SELECT 1")
+
+    def test_empty_database_export(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "empty.db"
+
+            with ActivityDatabase(source):
+                pass
+
+            destination = root / "empty.json"
+            export_activity(source, destination, "json")
+
+            self.assertEqual(
+                destination.read_text(encoding="utf-8"),
+                "[]\n",
+        )
+
+    def test_json_streaming_equivalence(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = self._database(root)
+            destination = root / "out.json"
+
+            with ActivityDatabase(source) as database:
+                rows = [
+                    period_row(period)
+                    for period in database.all_periods()
+                ]
+
+            expected = json.dumps(
+                rows,
+                ensure_ascii=False,
+                indent=2,
+                allow_nan=False,
+            ) + "\n"
+
+            export_activity(source, destination, "json")
+
+            self.assertEqual(
+                destination.read_text(encoding="utf-8"),
+                expected,
+            )
+
+    def test_csv_streaming_equivalence(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = self._database(root)
+            destination = root / "out.csv"
+
+            with ActivityDatabase(source) as database:
+                rows = [
+                    period_row(period)
+                    for period in database.all_periods()
+                ]
+
+            expected = io.StringIO(newline="")
+            writer = csv.DictWriter(
+                expected,
+                fieldnames=EXPORT_FIELDS,
+                quoting=csv.QUOTE_MINIMAL,
+            )
+
+            writer.writeheader()
+            writer.writerows(rows)
+
+            export_activity(source, destination, "csv")
+
+            self.assertEqual(
+                destination.read_bytes(),
+                expected.getvalue().encode("utf-8"),
+            )
 
     def test_empty_database_and_failed_export_leave_no_partial_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
